@@ -17,7 +17,8 @@
 - [Funcionalidades](#-funcionalidades)
 - [Perfis de Acesso](#-perfis-de-acesso)
 - [Tecnologias Utilizadas](#-tecnologias-utilizadas)
-- [Infraestrutura e Hospedagem](#-infraestrutura-e-hospedagem)
+- [Padrões de Nomenclatura](#%EF%B8%8F-padrões-de-nomenclatura)
+- [Infraestrutura e Hospedagem](#%EF%B8%8F-infraestrutura-e-hospedagem)
 - [Equipe](#-equipe)
 - [Metodologia](#-metodologia)
 - [Informações Acadêmicas](#-informações-acadêmicas)
@@ -28,9 +29,9 @@
 
 ## 📖 Sobre o Projeto
 
-O **Taça das Casas** é uma aplicação web mobile first desenvolvida para auxiliar a escola **CEF 102 Norte** no gerenciamento de suas gincanas internas. A aplicação permite o acompanhamento em tempo real da pontuação das equipes, com diferentes níveis de acesso para **professores** e **coordenação/direção**.
+O **Taça das Casas** é uma aplicação web com suporte ao formato **Web App (PWA)**, desenvolvida com abordagem mobile first para auxiliar a escola **CEF 102 Norte** no gerenciamento de suas gincanas internas. A aplicação permite o acompanhamento em tempo real da pontuação das equipes, com diferentes níveis de acesso para **professores** e **coordenação/direção**.
 
-O projeto visa substituir métodos manuais de controle de pontuação (planilhas, quadros físicos, etc.) por uma solução digital moderna, prática e acessível a toda a comunidade escolar, podendo ser acessada de qualquer dispositivo com um navegador de internet.
+O projeto visa substituir métodos manuais de controle de pontuação (planilhas, quadros físicos, etc.) por uma solução digital moderna, prática e acessível a toda a comunidade escolar, podendo ser acessada de qualquer dispositivo com um navegador de internet ou instalada diretamente no dispositivo como um aplicativo.
 
 ---
 
@@ -90,6 +91,33 @@ O projeto visa substituir métodos manuais de controle de pontuação (planilhas
 
 ---
 
+## 🏷️ Padrões de Nomenclatura
+
+Para manter a organização e legibilidade do código-fonte em todo o ecossistema do projeto, adotamos as seguintes convenções de nomenclatura:
+
+### 🗄️ Banco de Dados (MariaDB)
+
+- **Tabelas**: Letras minúsculas, preferencialmente no plural e utilizando `snake_case` (Exemplo: `usuarios`, `lancamentos_pontos`).
+- **Colunas/Campos**: Utilizando `snake_case` (Exemplo: `id`, `nome_completo`, `data_criacao`).
+- **Chaves Primárias e Estrangeiras**: Chaves primárias apenas `id`, chaves estrangeiras seguem o padrão `nome_tabela_id` (Exemplo: `usuario_id`).
+
+### ⚙️ Backend (Node.js / API)
+
+- **Arquivos e Pastas**: Utilizando `kebab-case` (Exemplo: `user-routes.js`, `auth-controller.js`).
+- **Variáveis, Funções e Métodos**: Utilizando `camelCase` (Exemplo: `buscarUsuario`, `calcularPontos()`).
+- **Classes e Models**: Utilizando `PascalCase` (Exemplo: `DatabaseConnection`, `UsuarioModel`).
+- **Constantes (Globais e Env)**: Utilizando `UPPER_SNAKE_CASE` (Exemplo: `DB_HOST`, `JWT_SECRET`).
+
+### 🖥️ Frontend (React)
+
+- **Componentes e Arquivos de Componentes**: Utilizando `PascalCase` (Exemplo: `Dashboard.jsx`, `CardEquipe.tsx`).
+- **Pastas (Rotas, Contextos, Utils)**: Utilizando `kebab-case` ou uma única palavra minúscula (Exemplo: `components`, `utils`, `auth-context`).
+- **Hooks Customizados**: `camelCase` começando com o prefixo `use` (Exemplo: `useAuth()`, `usePlacar()`).
+- **Variáveis e Funções Naturais**: Utilizando `camelCase` (Exemplo: `handleClick`, `isLoading`, `usuarioLogado`).
+- **Constantes Constantes (imutáveis)**: Utilizando `UPPER_SNAKE_CASE` (Exemplo: `MAX_PONTOS_POR_LANCAMENTO`).
+
+---
+
 ## ☁️ Infraestrutura e Hospedagem
 
 A aplicação está hospedada e configurada com as seguintes tecnologias de infraestrutura:
@@ -110,6 +138,7 @@ A aplicação está hospedada e configurada com as seguintes tecnologias de infr
 |:---------|:----------------------------------------------|
 | **Cauê** | PO (Product Owner) e Dev Back End             |
 | **Caio** | Dev Front End e Documentador                  |
+| **Luiz** | dev full stack                              |
 | **Gemini**| Tech Lead                                    |
 
 ---
