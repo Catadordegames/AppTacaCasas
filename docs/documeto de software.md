@@ -9,7 +9,7 @@
 ## Links do Projeto
 
 - **Site:** [tacadascasas.duckdns.org](https://tacadascasas.duckdns.org)
-- **Repositório GitHub:** [Link do Repositório]
+- **Repositório GitHub:** [app-taca-casas](https://github.com/Catadordegames/AppTacaCasas)
 
 ## Introdução
 
