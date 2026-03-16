@@ -118,6 +118,39 @@ Para manter a organização e legibilidade do código-fonte em todo o ecossistem
 
 ---
 
+## 🚀 Orientações para Deploy e Setup
+
+Para garantir que a automação e o deploy manual no servidor (via `git pull`) funcionem sem quebrar a aplicação, os desenvolvedores devem aderir às seguintes regras de configuração:
+
+### 1. Arquivos Ignorados (.gitignore)
+
+- **Imagens e Uploads**: A pasta `uploads/` **deve** permanecer no `.gitignore`. Ela armazena os brasões das equipes e imagens geradas dinamicamente. Se não for ignorada, o Git pode sobrescrever o diretório na VM e apagar os arquivos enviados pelos usuários.
+- **Dependências e Builds**: Pastas como `node_modules/`, `build/` e `dist/` nunca devem ser comitadas.
+- **Dados Sensíveis**: O arquivo `.env` definitivo não deve ir para o GitHub.
+
+### 2. Variáveis de Ambiente
+
+- O projeto possui um arquivo `.env.example` com chaves vazias (como `DB_PASSWORD=` e `API_URL=`).
+- No ambiente local, as variáveis apontam para o `localhost` e usam credenciais de desenvolvimento.
+- **Na VM (Produção)**: A equipe criará um `.env` real preenchido com os dados definitivos (como o IP da Oracle Cloud e as senhas do MariaDB). O frontend utilizará essa variável para rotear o login corretamente.
+
+### 3. Scripts Padronizados (package.json)
+
+Para que o servidor consiga inicializar o projeto corretamente, utilize scripts padronizados:
+
+- **Frontend**: Garanta a existência de um script `"build"` para compilar os estáticos do React.
+- **Backend**: Configure um script `"start"`. No servidor, não usaremos `nodemon` ou `node index.js` diretamente; o backend rodará através do **PM2**, garantindo a reinicialização automática em caso de *crash*.
+
+### 4. Controle do Banco de Dados (Migrations)
+
+Como o banco de dados local difere do servidor de produção, exportações manuais não devem ser feitas para transferir informações.
+
+- Centralize as alterações (como adicionar colunas novas) na pasta `/sql/`.
+- Crie scripts `.sql` para cada modificação (migration) feita na sprint.
+- No servidor, apenas aplique os scripts correspondentes para atualizar o esquema sem correr o risco de perder dados que já estão cadastrados.
+
+---
+
 ## ☁️ Infraestrutura e Hospedagem
 
 A aplicação está hospedada e configurada com as seguintes tecnologias de infraestrutura:

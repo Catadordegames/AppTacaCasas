@@ -1,0 +1,51 @@
+name: Deploy Automático para Oracle VM
+
+# O script roda sempre que houver um push na branch prod
+on:
+  push:
+    branches:
+      - prod 
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🚚 Baixar o código mais recente
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Configurar o Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Ajuste para a versão que você está usando
+
+      - name: 📦 Instalar e compilar o Front-end (React)
+        run: |
+          cd frontend
+          npm install
+          npm run build
+          # Isso gera a pasta "build" ou "dist" com os arquivos estáticos
+
+      - name: 🚀 Transferir arquivos para a VM via Rsync
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.VM_SSH_KEY }}
+          # Aqui é onde excluímos o que NÃO deve ir para o servidor!
+          ARGS: "-avz --exclude='.git/' --exclude='README.md' --exclude='frontend/node_modules/' --exclude='backend/node_modules/' --exclude='uploads/' --exclude='.env'"
+          SOURCE: "./" 
+          REMOTE_HOST: ${{ secrets.VM_HOST }}
+          REMOTE_USER: ${{ secrets.VM_USER }}
+          TARGET: "/var/www/tacadascasas" # A pasta onde o projeto fica no servidor
+
+      - name: 🔄 Atualizar dependências e reiniciar o Back-end
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            cd /var/www/tacadascasas/backend
+            npm install --production
+            
+            # Reinicia o Node.js usando o PM2 para aplicar as mudanças
+            pm2 restart api-node || pm2 start index.js --name "api-node"
