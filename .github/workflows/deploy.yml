@@ -24,18 +24,57 @@ jobs:
           cd frontend
           npm install
           npm run build
-          # Isso gera a pasta "build" ou "dist" com os arquivos estáticos
+          # Isso gera a pasta dist com os arquivos estáticos
+
+      - name: 📁 Preparar arquivos para deploy
+        run: |
+          # Cria pasta de deploy com apenas o necessário
+          mkdir -p deploy/frontend/dist
+          mkdir -p deploy/backend
+          
+          # Copia o build do frontend
+          cp -r frontend/dist/* deploy/frontend/dist/
+          
+          # Copia o backend (sem node_modules)
+          cp -r backend/* deploy/backend/
+          
+          # Copia arquivos de configuração do backend
+          cp backend/package*.json deploy/backend/ 2>/dev/null || true
 
       - name: 🚀 Transferir arquivos para a VM via Rsync
         uses: easingthemes/ssh-deploy@main
         env:
           SSH_PRIVATE_KEY: ${{ secrets.VM_SSH_KEY }}
           # Aqui é onde excluímos o que NÃO deve ir para o servidor!
-          ARGS: "-avz --exclude='.git/' --exclude='README.md' --exclude='frontend/node_modules/' --exclude='backend/node_modules/' --exclude='uploads/' --exclude='.env'"
-          SOURCE: "./" 
+          ARGS: "-avz --exclude='.git/' --exclude='README.md' --exclude='node_modules/' --exclude='uploads/'"
+          SOURCE: "./deploy/" 
           REMOTE_HOST: ${{ secrets.VM_HOST }}
           REMOTE_USER: ${{ secrets.VM_USER }}
           TARGET: "/var/www/tacadascasas" # A pasta onde o projeto fica no servidor
+
+      - name: 📝 Criar arquivo .env na VM
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            cat > /var/www/tacadascasas/backend/.env << 'EOF'
+            # Database
+            DB_HOST=${{ secrets.DB_HOST }}
+            DB_PORT=${{ secrets.DB_PORT }}
+            DB_USER=${{ secrets.DB_USER }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DB_NAME=${{ secrets.DB_NAME }}
+
+            # Backend
+            PORT=${{ secrets.PORT }}
+            NODE_ENV=production
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+
+            # Frontend (build time)
+            VITE_API_URL=${{ secrets.VITE_API_URL }}
+            EOF
 
       - name: 🔄 Atualizar dependências e reiniciar o Back-end
         uses: appleboy/ssh-action@master

@@ -47,6 +47,10 @@ node_modules/
 dist/
 build/
 
+# Vite cache
+.vite/
+frontend/.vite/
+
 # Uploads and media files
 uploads/
 
