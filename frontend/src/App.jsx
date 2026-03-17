@@ -2,10 +2,27 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
+import TestView from './views/TestView'
 import './App.css'
 
 function App() {
   const [count, setCount] = useState(0)
+  const [showTestView, setShowTestView] = useState(false)
+
+  // Renderiza a view de teste quando ativada
+  if (showTestView) {
+    return (
+      <>
+        <button
+          onClick={() => setShowTestView(false)}
+          className="fixed top-4 left-4 z-50 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg font-medium shadow-lg transition-colors flex items-center gap-2"
+        >
+          <span>←</span> Voltar para Home
+        </button>
+        <TestView />
+      </>
+    )
+  }
 
   return (
     <>
@@ -26,6 +43,14 @@ function App() {
           onClick={() => setCount((count) => count + 1)}
         >
           Count is {count}
+        </button>
+
+        {/* Botão para acessar a view de teste */}
+        <button
+          onClick={() => setShowTestView(true)}
+          className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium shadow-lg transition-colors flex items-center gap-2 mx-auto"
+        >
+          <span>🧪</span> Abrir Página de Teste
         </button>
       </section>
 
