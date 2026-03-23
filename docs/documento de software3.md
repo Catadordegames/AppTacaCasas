@@ -72,47 +72,7 @@ O sistema emprega uma arquitetura do tipo **Cliente-Servidor**, estruturada no m
 
 Abaixo é apresentado um diagrama arquitetural detalhado do modelo de implantação da aplicação:
 
-```mermaid
-graph TD
-    %% Nós Externos (Client-side)
-    subgraph "Clientes / Usuários Externos"
-        ClientPWA(["📱 Web App / PWA (Mobile)"])
-        ClientDesk(["💻 Navegador Web (Desktop)"])
-    end
-
-    %% Servidor e Infraestrutura
-    subgraph "Infraestrutura - Servidor Oracle Cloud (Ubuntu 20.04)"
-        
-        %% Proxy Reverso
-        Nginx[["🛡️ Nginx (Proxy Reverso & Servidor de Estáticos)"]]
-        
-        %% Frontend estático
-        subgraph "Apresentação (Frontend)"
-            ReactJS("⚛️ React + TailwindCSS (Build Estático)")
-        end
-        
-        %% Backend / Endpoints
-        subgraph "Lógica de Negócios (Backend)"
-            PM2[["⚙️ Process Manager (PM2)"]]
-            API("🟢 Node.js + Express API")
-            PM2 --> |Mantém e Orquestra| API
-        end
-
-        %% Persistência de Dados
-        subgraph "Persistência"
-            Database[("💽 Banco de Dados (MariaDB)")]
-        end
-
-        %% Relações Internas do Servidor
-        Nginx --> |"Redireciona Rotas Base (Static Files)"| ReactJS
-        Nginx --> |"Proxy Pass (Requisições API: /api)"| API
-        API <--> |"Queries / Transações SQL"| Database
-    end
-
-    %% Integração Geral e Protocolos
-    ClientPWA -.-> |"HTTPS (Acesso Seguro SSL)"| Nginx
-    ClientDesk -.-> |"HTTPS (Acesso Seguro SSL)"| Nginx
-```
+![Diagrama de Arquitetura](./Diagrama%20de%20arquitetura.png)
 
 ### 5.1 Breve Descrição dos Componentes
 
