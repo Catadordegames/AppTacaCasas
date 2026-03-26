@@ -169,11 +169,10 @@ A aplicação está hospedada e configurada com as seguintes tecnologias de infr
 
 | Membro   | Papel                                         |
 |:---------|:----------------------------------------------|
-| **Cauê** | PO (Product Owner) e Dev Back End             |
-| **Caio** | Dev Front End e Documentador                  |
-| **Luiz** | dev full stack                              |
-| **Gemini**| Tech Lead                                    |
-
+| **Cauê** | PO (Product Owner) & Dba                      |
+| **Caio** | Dev full stack                                |
+| **Luiz** | Documentador                                  |
+-
 ---
 
 ## 📐 Metodologia
