@@ -118,6 +118,44 @@ Para manter a organização e legibilidade do código-fonte em todo o ecossistem
 
 ---
 
+## 💻 Como Rodar Localmente (Desenvolvimento)
+
+O projeto pode ser executado de duas maneiras: utilizando Docker (recomendado para facilitar o setup) ou rodando os serviços separadamente via Node.js.
+
+### Opção 1: Via Docker (Recomendado)
+
+Certifique-se de ter o Docker e o Docker Compose instalados. Na raiz do projeto, execute:
+
+```bash
+docker-compose up -d --build
+```
+
+- **Frontend:** Acessível em `http://localhost`
+- **Backend (API):** Acessível em `http://localhost:3000`
+- **Banco de Dados:** O MariaDB será inicializado automaticamente com o `schema.sql` (porta 3306 internamente).
+
+Para parar a execução, utilize `docker-compose down`.
+
+### Opção 2: Manualmente (Node.js e npm)
+
+Caso prefira desenvolver sem o Docker, você precisará ter o MariaDB rodando e iniciar os servidores do frontend e backend em terminais separados:
+
+**Frontend (React/Vite):**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+**Backend (Node.js):**
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+---
+
 ## 🚀 Orientações para Deploy e Setup
 
 Para garantir que a automação e o deploy manual no servidor (via `git pull`) funcionem sem quebrar a aplicação, os desenvolvedores devem aderir às seguintes regras de configuração:
