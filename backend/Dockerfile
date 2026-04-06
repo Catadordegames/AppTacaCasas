@@ -1,19 +1,23 @@
 FROM node:20-alpine
 
-WORKDIR /app
-
-# Instalar PM2 globalmente conforme mencionado na documentação
+# Instala PM2 globalmente para gerenciar o processo em produção
 RUN npm install -g pm2
 
-# Instalar dependências
-COPY package*.json ./
-RUN npm install --production
+WORKDIR /app
 
-# Copiar restante do código
+# Copia os arquivos de dependências primeiro (otimiza cache do Docker)
+COPY package*.json ./
+
+# Instala apenas dependências de produção
+RUN npm install --omit=dev
+
+# Copia o restante do código
 COPY . .
 
-# Expor a porta em que a API vai rodar
-EXPOSE 3000
+# Cria pasta de logs para o PM2
+RUN mkdir -p logs
 
-# Inicializar utilizando o pm2-runtime, ideal para containers Docker
-CMD ["pm2-runtime", "index.js"]
+EXPOSE 3001
+
+# Usa PM2 para rodar a aplicação (mantém processo vivo e reinicia em falhas)
+CMD ["pm2-runtime", "ecosystem.config.js"]
