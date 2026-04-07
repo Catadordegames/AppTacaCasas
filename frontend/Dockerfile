@@ -1,5 +1,12 @@
-# Estágio 1: Build da aplicação React
-FROM node:20-alpine as build
+# ============================================================
+# Dockerfile do Frontend — Build multi-stage
+# Stage 1: compila o React com Vite
+# Stage 2: serve os arquivos estáticos com Nginx (muito mais leve)
+# Resultado: imagem final com ~25MB ao invés de ~400MB
+# ============================================================
+
+# ── Stage 1: Build ──────────────────────────────────────────
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -7,20 +14,17 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
-
-# Certifique-se de que a variável de ambiente para a API aponte para o Nginx (proxy reverso)
-# ou construa o app com a URL relativa EX: /api/
 RUN npm run build
+# Os arquivos compilados ficam em /app/dist
 
-# Estágio 2: Nginx para servir arquivos estáticos e atuar como proxy
+# ── Stage 2: Serve com Nginx ─────────────────────────────────
 FROM nginx:alpine
 
-# Copiar configuração customizada do Nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copia os arquivos compilados para o diretório padrão do Nginx
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copiar o build do React (Geralmente na pasta 'dist' se for Vite ou 'build' se for Create React App)
-# Aqui assumimos 'dist' como é padrão para Vite. Se for CRA mude para 'build'
-COPY --from=build /app/dist /usr/share/nginx/html
+# Copia configuração customizada do Nginx
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 

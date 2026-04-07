@@ -1,0 +1,90 @@
+# ============================================================
+# docker-compose.yml
+# Orquestra os 3 serviços: mariadb, backend (Node/PM2), frontend (React/Nginx)
+#
+# Como usar:
+#   docker-compose up --build        (primeira vez)
+#   docker-compose up -d             (subir em background)
+#   docker-compose down              (parar tudo)
+#   docker-compose logs -f backend   (ver logs do backend)
+# ============================================================
+
+version: '3.9'
+
+services:
+
+  # ── 1. Banco de Dados MariaDB ───────────────────────────────
+  mariadb:
+    image: mariadb:11
+    container_name: taca_mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: root_senha_segura
+      MARIADB_DATABASE: taca_das_casas
+      MARIADB_USER: taca_user
+      MARIADB_PASSWORD: taca_senha_segura
+    volumes:
+      # Persiste os dados do banco entre restarts
+      - mariadb_data:/var/lib/mysql
+      # Script SQL executado na primeira inicialização
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "3306:3306"   # Expõe para conexão local (ex: DBeaver, TablePlus)
+    networks:
+      - taca_network
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ── 2. Backend Node.js com PM2 ──────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: taca_backend
+    restart: unless-stopped
+    depends_on:
+      mariadb:
+        condition: service_healthy   # Aguarda o banco estar pronto
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DB_HOST: mariadb               # Nome do serviço Docker = hostname interno
+      DB_PORT: 3306
+      DB_USER: taca_user
+      DB_PASSWORD: taca_senha_segura
+      DB_NAME: taca_das_casas
+      JWT_SECRET: mude_esta_chave_em_producao_use_uma_string_longa_e_aleatoria
+      JWT_EXPIRES_IN: 8h
+      FRONTEND_URL: http://localhost
+    ports:
+      - "3001:3001"
+    networks:
+      - taca_network
+
+  # ── 3. Frontend React servido pelo Nginx ────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: taca_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - taca_network
+
+# ── Volumes Persistentes ────────────────────────────────────
+volumes:
+  mariadb_data:
+    driver: local
+
+# ── Rede Interna ────────────────────────────────────────────
+networks:
+  taca_network:
+    driver: bridge
