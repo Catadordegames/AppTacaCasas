@@ -5,78 +5,188 @@
 // opcionalmente seleciona aluno e turma.
 // ============================================================
 
-import { useState, useEffect } from 'react'
-import { PlusCircle, Zap } from 'lucide-react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import { PlusCircle } from 'lucide-react'
+import toast from 'react-hot-toast'
+
 import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
-import toast from 'react-hot-toast'
+import {
+  Button,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Select,
+  Input,
+  ToggleButton,
+  PontosPreview,
+} from '../../components/ui'
+import { isRequired, isValidPontos } from '../../utils/validators'
+
+// Opções de turno disponíveis
+const TURNOS = [
+  { value: '', label: 'Não especificado' },
+  { value: 'Matutino', label: 'Matutino' },
+  { value: 'Vespertino', label: 'Vespertino' },
+  { value: 'Noturno', label: 'Noturno' },
+]
+
+// Opções do toggle de justificativa
+const JUSTIFICATIVA_OPTIONS = [
+  { value: 'padrao', label: 'Padrão' },
+  { value: 'custom', label: 'Personalizada' },
+]
+
+const INITIAL_FORM_STATE = {
+  casa_id: '',
+  turma_id: '',
+  aluno_id: '',
+  justificativa_id: '',
+  is_custom: false,
+  custom_justificativa: '',
+  pontuacao: '',
+  turno: '',
+}
 
 export default function LancarPontos() {
   const { usuario } = useAuth()
+
+  // Dados do formulário
+  const [form, setForm] = useState(INITIAL_FORM_STATE)
+  const [errors, setErrors] = useState({})
+  const [loading, setLoading] = useState(false)
+
+  // Dados das APIs
   const [casas, setCasas] = useState([])
   const [turmas, setTurmas] = useState([])
   const [alunos, setAlunos] = useState([])
   const [justificativas, setJustificativas] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [loadingData, setLoadingData] = useState(true)
 
-  const [form, setForm] = useState({
-    casa_id: '',
-    turma_id: '',
-    aluno_id: '',
-    justificativa_id: '',
-    is_custom: false,
-    custom_justificativa: '',
-    pontuacao: '',
-    turno: '',
-  })
-
+  // Carrega dados iniciais (casas, turmas, justificativas)
   useEffect(() => {
-    Promise.all([
-      api.get('/casas'),
-      api.get('/turmas'),
-      api.get('/justificativas'),
-    ]).then(([c, t, j]) => {
-      setCasas(c.data)
-      setTurmas(t.data)
-      setJustificativas(j.data)
-    })
+    const loadInitialData = async () => {
+      try {
+        const [casasRes, turmasRes, justRes] = await Promise.all([
+          api.get('/casas'),
+          api.get('/turmas'),
+          api.get('/justificativas'),
+        ])
+        setCasas(casasRes.data)
+        setTurmas(turmasRes.data)
+        setJustificativas(justRes.data)
+      } catch (err) {
+        toast.error('Erro ao carregar dados. Tente recarregar a página.')
+      } finally {
+        setLoadingData(false)
+      }
+    }
+
+    loadInitialData()
   }, [])
 
   // Carrega alunos quando turma é selecionada
   useEffect(() => {
-    if (form.turma_id) {
-      api.get(`/alunos?turma_id=${form.turma_id}&casa_id=${form.casa_id || ''}`)
-        .then((r) => setAlunos(r.data))
-    } else {
-      setAlunos([])
-      setForm((f) => ({ ...f, aluno_id: '' }))
+    const loadAlunos = async () => {
+      if (!form.turma_id) {
+        setAlunos([])
+        setForm((f) => ({ ...f, aluno_id: '' }))
+        return
+      }
+
+      try {
+        const params = new URLSearchParams()
+        params.append('turma_id', form.turma_id)
+        if (form.casa_id) params.append('casa_id', form.casa_id)
+
+        const { data } = await api.get(`/alunos?${params}`)
+        setAlunos(data)
+      } catch (err) {
+        toast.error('Erro ao carregar alunos.')
+      }
     }
+
+    loadAlunos()
   }, [form.turma_id, form.casa_id])
 
-  const set = (field, value) => setForm((f) => ({ ...f, [field]: value }))
+  // Handler para atualizar campos do formulário
+  const updateField = useCallback((field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }))
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: undefined }))
+    }
+  }, [errors])
 
-  const pontosPreview = form.is_custom
-    ? (form.pontuacao ? Number(form.pontuacao) : 0)
-    : (justificativas.find((j) => j.id === Number(form.justificativa_id))?.pontos ?? 0)
+  // Handler para toggle de justificativa
+  const handleJustificativaTypeChange = useCallback((type) => {
+    setForm((prev) => ({
+      ...prev,
+      is_custom: type === 'custom',
+      justificativa_id: '',
+      custom_justificativa: '',
+      pontuacao: '',
+    }))
+  }, [])
 
+  // Calcula preview de pontos
+  const pontosPreview = useMemo(() => {
+    if (form.is_custom) {
+      return form.pontuacao ? Number(form.pontuacao) : 0
+    }
+    const just = justificativas.find((j) => j.id === Number(form.justificativa_id))
+    return just?.pontos ?? 0
+  }, [form.is_custom, form.pontuacao, form.justificativa_id, justificativas])
+
+  // Validação do formulário
+  const validate = useCallback(() => {
+    const newErrors = {}
+
+    if (!isRequired(form.casa_id)) {
+      newErrors.casa_id = 'Selecione uma casa'
+    }
+
+    if (form.is_custom) {
+      if (!isRequired(form.custom_justificativa)) {
+        newErrors.custom_justificativa = 'Informe a descrição'
+      }
+      if (!isValidPontos(form.pontuacao)) {
+        newErrors.pontuacao = 'Informe uma pontuação válida'
+      }
+    } else {
+      if (!isRequired(form.justificativa_id)) {
+        newErrors.justificativa_id = 'Selecione uma justificativa'
+      }
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }, [form])
+
+  // Submit do formulário
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    if (!validate()) return
+
+    const payload = buildPayload(form)
+
     try {
       setLoading(true)
-      await api.post('/lancamentos', {
-        ...form,
-        casa_id: Number(form.casa_id),
-        turma_id: form.turma_id ? Number(form.turma_id) : undefined,
-        aluno_id: form.aluno_id ? Number(form.aluno_id) : undefined,
-        justificativa_id: form.justificativa_id ? Number(form.justificativa_id) : undefined,
-        pontuacao: form.is_custom ? Number(form.pontuacao) : undefined,
-      })
-      toast.success(`✅ ${pontosPreview > 0 ? '+' : ''}${pontosPreview} pontos lançados!`)
+      await api.post('/lancamentos', payload)
+
+      toast.success(`✅ ${formatPontosMessage(pontosPreview)} lançados!`)
+
       // Reset parcial — mantém casa selecionada
-      setForm((f) => ({
-        ...f,
-        turma_id: '', aluno_id: '', justificativa_id: '',
-        is_custom: false, custom_justificativa: '', pontuacao: '', turno: '',
+      setForm((prev) => ({
+        ...prev,
+        turma_id: '',
+        aluno_id: '',
+        justificativa_id: '',
+        is_custom: false,
+        custom_justificativa: '',
+        pontuacao: '',
+        turno: '',
       }))
     } catch (err) {
       toast.error(err.response?.data?.error || 'Erro ao lançar pontos.')
@@ -85,153 +195,214 @@ export default function LancarPontos() {
     }
   }
 
+  // Opções para selects
+  const casaOptions = useMemo(() =>
+    casas.map((c) => ({
+      value: c.id,
+      label: `${c.brasao} ${c.nome}`,
+    })),
+    [casas]
+  )
+
+  const turmaOptions = useMemo(() =>
+    turmas.map((t) => ({
+      value: t.id,
+      label: `${t.nome} — ${t.turno}`,
+    })),
+    [turmas]
+  )
+
+  const alunoOptions = useMemo(() =>
+    alunos.map((a) => ({
+      value: a.id,
+      label: a.nome,
+    })),
+    [alunos]
+  )
+
+  const justificativaOptions = useMemo(() =>
+    justificativas.map((j) => ({
+      value: j.id,
+      label: `${j.nome} (${formatPontos(j.pontos)} pts)`,
+    })),
+    [justificativas]
+  )
+
+  if (loadingData) {
+    return <LoadingState />
+  }
+
+  return (
+    <div className="max-w-lg mx-auto space-y-6">
+      <PageHeader title="Lançar Pontos" icon={<PlusCircle size={24} />} />
+
+      <Card>
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-4">
+            {/* Casa */}
+            <Select
+              label="Casa / Equipe"
+              value={form.casa_id}
+              onChange={(e) => updateField('casa_id', e.target.value)}
+              options={casaOptions}
+              placeholder="Selecione a casa..."
+              error={errors.casa_id}
+              required
+            />
+
+            {/* Turma (opcional) */}
+            <Select
+              label="Turma"
+              value={form.turma_id}
+              onChange={(e) => updateField('turma_id', e.target.value)}
+              options={turmaOptions}
+              placeholder="Nenhuma turma específica"
+            />
+
+            {/* Aluno (opcional, depende de turma) */}
+            {form.turma_id && (
+              <Select
+                label="Aluno"
+                value={form.aluno_id}
+                onChange={(e) => updateField('aluno_id', e.target.value)}
+                options={alunoOptions}
+                placeholder="Nenhum aluno específico"
+              />
+            )}
+
+            {/* Turno (opcional) */}
+            <Select
+              label="Turno"
+              value={form.turno}
+              onChange={(e) => updateField('turno', e.target.value)}
+              options={TURNOS}
+            />
+
+            {/* Toggle: justificativa padrão vs custom */}
+            <div>
+              <label className="label">Tipo de justificativa</label>
+              <ToggleButton
+                options={JUSTIFICATIVA_OPTIONS}
+                value={form.is_custom ? 'custom' : 'padrao'}
+                onChange={handleJustificativaTypeChange}
+              />
+            </div>
+
+            {/* Justificativa padrão */}
+            {!form.is_custom && (
+              <Select
+                label="Justificativa"
+                value={form.justificativa_id}
+                onChange={(e) => updateField('justificativa_id', e.target.value)}
+                options={justificativaOptions}
+                placeholder="Selecione..."
+                error={errors.justificativa_id}
+                required
+              />
+            )}
+
+            {/* Justificativa custom */}
+            {form.is_custom && (
+              <>
+                <Input
+                  label="Descrição"
+                  placeholder="Ex: Campeão da feira de ciências"
+                  value={form.custom_justificativa}
+                  onChange={(e) => updateField('custom_justificativa', e.target.value)}
+                  error={errors.custom_justificativa}
+                  required
+                  maxLength={100}
+                />
+                <Input
+                  label="Pontuação"
+                  type="number"
+                  placeholder="Ex: 50 (use negativo para penalidade)"
+                  value={form.pontuacao}
+                  onChange={(e) => updateField('pontuacao', e.target.value)}
+                  error={errors.pontuacao}
+                  required
+                />
+              </>
+            )}
+
+            {/* Preview da pontuação */}
+            <PontosPreview pontos={pontosPreview} />
+
+            <Button
+              type="submit"
+              loading={loading}
+              disabled={loading || !form.casa_id}
+              fullWidth
+            >
+              {loading ? 'Lançando...' : '🏆 Confirmar Lançamento'}
+            </Button>
+          </CardContent>
+        </form>
+      </Card>
+    </div>
+  )
+}
+
+// ============================================================
+// Helper functions
+// ============================================================
+
+/**
+ * Constrói o payload para envio à API
+ */
+function buildPayload(form) {
+  return {
+    casa_id: Number(form.casa_id),
+    turma_id: form.turma_id ? Number(form.turma_id) : undefined,
+    aluno_id: form.aluno_id ? Number(form.aluno_id) : undefined,
+    justificativa_id: form.justificativa_id ? Number(form.justificativa_id) : undefined,
+    pontuacao: form.is_custom ? Number(form.pontuacao) : undefined,
+    turno: form.turno || undefined,
+    custom_justificativa: form.is_custom ? form.custom_justificativa : undefined,
+  }
+}
+
+/**
+ * Formata pontos para mensagem
+ */
+function formatPontos(pontos) {
+  if (pontos === null || pontos === undefined) return '0'
+  const num = Number(pontos)
+  return num > 0 ? `+${num}` : `${num}`
+}
+
+/**
+ * Formata mensagem de pontos
+ */
+function formatPontosMessage(pontos) {
+  return `${formatPontos(pontos)} pontos`
+}
+
+// ============================================================
+// Sub-components
+// ============================================================
+
+function PageHeader({ title, icon }) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="text-gold-400">{icon}</span>
+      <h1 className="text-2xl font-display font-bold text-white">{title}</h1>
+    </div>
+  )
+}
+
+function LoadingState() {
   return (
     <div className="max-w-lg mx-auto space-y-6">
       <div className="flex items-center gap-3">
         <PlusCircle size={24} className="text-gold-400" />
         <h1 className="text-2xl font-display font-bold text-white">Lançar Pontos</h1>
       </div>
-
-      <div className="card border border-dark-500">
-        <form onSubmit={handleSubmit} className="space-y-4">
-
-          {/* Casa */}
-          <div>
-            <label className="label">Casa / Equipe *</label>
-            <select className="input" value={form.casa_id} onChange={(e) => set('casa_id', e.target.value)} required>
-              <option value="">Selecione a casa...</option>
-              {casas.map((c) => (
-                <option key={c.id} value={c.id}>{c.brasao} {c.nome}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Turma (opcional) */}
-          <div>
-            <label className="label">Turma <span className="text-gray-500 font-normal">(opcional)</span></label>
-            <select className="input" value={form.turma_id} onChange={(e) => set('turma_id', e.target.value)}>
-              <option value="">Nenhuma turma específica</option>
-              {turmas.map((t) => (
-                <option key={t.id} value={t.id}>{t.nome} — {t.turno}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Aluno (opcional, depende de turma) */}
-          {form.turma_id && (
-            <div>
-              <label className="label">Aluno <span className="text-gray-500 font-normal">(opcional)</span></label>
-              <select className="input" value={form.aluno_id} onChange={(e) => set('aluno_id', e.target.value)}>
-                <option value="">Nenhum aluno específico</option>
-                {alunos.map((a) => (
-                  <option key={a.id} value={a.id}>{a.nome}</option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {/* Turno (opcional) */}
-          <div>
-            <label className="label">Turno <span className="text-gray-500 font-normal">(opcional)</span></label>
-            <select className="input" value={form.turno} onChange={(e) => set('turno', e.target.value)}>
-              <option value="">Não especificado</option>
-              <option>Matutino</option>
-              <option>Vespertino</option>
-              <option>Noturno</option>
-            </select>
-          </div>
-
-          {/* Toggle: justificativa padrão vs custom */}
-          <div>
-            <label className="label">Tipo de justificativa</label>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => set('is_custom', false)}
-                className={`flex-1 py-2 rounded-lg text-sm font-semibold border transition-all ${
-                  !form.is_custom
-                    ? 'bg-gold-500/20 border-gold-500/50 text-gold-400'
-                    : 'bg-dark-700 border-dark-500 text-gray-400 hover:border-dark-400'
-                }`}
-              >
-                Padrão
-              </button>
-              <button
-                type="button"
-                onClick={() => set('is_custom', true)}
-                className={`flex-1 py-2 rounded-lg text-sm font-semibold border transition-all ${
-                  form.is_custom
-                    ? 'bg-gold-500/20 border-gold-500/50 text-gold-400'
-                    : 'bg-dark-700 border-dark-500 text-gray-400 hover:border-dark-400'
-                }`}
-              >
-                Personalizada
-              </button>
-            </div>
-          </div>
-
-          {/* Justificativa padrão */}
-          {!form.is_custom && (
-            <div>
-              <label className="label">Justificativa *</label>
-              <select className="input" value={form.justificativa_id} onChange={(e) => set('justificativa_id', e.target.value)} required>
-                <option value="">Selecione...</option>
-                {justificativas.map((j) => (
-                  <option key={j.id} value={j.id}>
-                    {j.nome} ({j.pontos > 0 ? '+' : ''}{j.pontos} pts)
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {/* Justificativa custom */}
-          {form.is_custom && (
-            <>
-              <div>
-                <label className="label">Descrição *</label>
-                <input
-                  className="input"
-                  placeholder="Ex: Campeão da feira de ciências"
-                  value={form.custom_justificativa}
-                  onChange={(e) => set('custom_justificativa', e.target.value)}
-                  required
-                  maxLength={100}
-                />
-              </div>
-              <div>
-                <label className="label">Pontuação *</label>
-                <input
-                  className="input"
-                  type="number"
-                  placeholder="Ex: 50 (use negativo para penalidade)"
-                  value={form.pontuacao}
-                  onChange={(e) => set('pontuacao', e.target.value)}
-                  required
-                />
-              </div>
-            </>
-          )}
-
-          {/* Preview da pontuação */}
-          {pontosPreview !== 0 && (
-            <div className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-bold
-              ${pontosPreview > 0 ? 'bg-green-500/10 border border-green-500/30 text-green-400' : 'bg-red-500/10 border border-red-500/30 text-red-400'}`}>
-              <Zap size={16} />
-              {pontosPreview > 0 ? '+' : ''}{pontosPreview} pontos para a casa selecionada
-            </div>
-          )}
-
-          <button type="submit" disabled={loading || !form.casa_id} className="btn-primary w-full">
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <div className="w-4 h-4 border-2 border-dark-900 border-t-transparent rounded-full animate-spin" />
-                Lançando...
-              </span>
-            ) : '🏆 Confirmar Lançamento'}
-          </button>
-        </form>
-      </div>
+      <Card>
+        <CardContent className="py-8 text-center">
+          <p className="text-gray-500">Carregando...</p>
+        </CardContent>
+      </Card>
     </div>
   )
 }
