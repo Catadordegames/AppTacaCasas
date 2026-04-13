@@ -1,265 +1,440 @@
 # 🏆 Taça das Casas
 
-> Site mobile first para gerenciamento de gincanas escolares, com controle de pontuação, equipes e permissões por perfil de usuário.
-
-![Status](https://img.shields.io/badge/Status-Em%20Desenvolvimento-yellow)
-![Plataforma](https://img.shields.io/badge/Plataforma-Web-green)
-![Linguagem](https://img.shields.io/badge/:badgeContent?style=flat&logo=nodedotjs)
-![Banco de Dados](https://img.shields.io/badge/Banco%20de%20Dados-MariaDB-red)
-
-> 🔗 **Acesse a aplicação:** [tacadascasas.duckdns.org](https://tacadascasas.duckdns.org)
+Sistema web de gerenciamento de gincana escolar para o **CEF 102 Norte**.  
+Mobile-first, com suporte a PWA e atualização do placar em tempo real.
 
 ---
 
-## 📋 Sumário
+## 📋 Índice
 
-- [Sobre o Projeto](#-sobre-o-projeto)
-- [Funcionalidades](#-funcionalidades)
-- [Perfis de Acesso](#-perfis-de-acesso)
-- [Tecnologias Utilizadas](#-tecnologias-utilizadas)
-- [Padrões de Nomenclatura](#%EF%B8%8F-padrões-de-nomenclatura)
-- [Infraestrutura e Hospedagem](#%EF%B8%8F-infraestrutura-e-hospedagem)
-- [Equipe](#-equipe)
-- [Metodologia](#-metodologia)
-- [Informações Acadêmicas](#-informações-acadêmicas)
-- [Status do Projeto](#-status-do-projeto)
-- [Licença](#-licença)
+- [Sobre o Projeto](#sobre)
+- [Tecnologias](#tecnologias)
+- [Como Rodar com Docker](#docker)
+- [Como Rodar sem Docker](#sem-docker)
+- [Perfis de Acesso](#perfis)
+- [Endpoints da API](#endpoints)
+- [Exemplos de Requisição](#exemplos)
+- [Estrutura do Projeto](#estrutura)
 
 ---
 
-## 📖 Sobre o Projeto
+## 🎯 Sobre o Projeto <a name="sobre"></a>
 
-O **Taça das Casas** é uma aplicação web com suporte ao formato **Web App (PWA)**, desenvolvida com abordagem mobile first para auxiliar a escola **CEF 102 Norte** no gerenciamento de suas gincanas internas. A aplicação permite o acompanhamento em tempo real da pontuação das equipes, com diferentes níveis de acesso para **professores** e **coordenação/direção**.
+O **Taça das Casas** substitui planilhas e quadros físicos por uma solução digital acessível de qualquer dispositivo.
 
-O projeto visa substituir métodos manuais de controle de pontuação (planilhas, quadros físicos, etc.) por uma solução digital moderna, prática e acessível a toda a comunidade escolar, podendo ser acessada de qualquer dispositivo com um navegador de internet ou instalada diretamente no dispositivo como um aplicativo.
-
----
-
-## ✨ Funcionalidades
-
-### Gerais
-
-- 📊 Placar geral das equipes em tempo real com visualização pública (alunos e comunidade visualizam apenas as posições/placar)
-- 🔐 Sistema de autenticação com dois níveis de permissão (Professor e Coordenação/Direção)
-- 📱 Interface responsiva (Mobile First)
-- 📁 Exportação de dados em CSV (tabelas e relatórios) com filtros por Turma e Casa/Equipe
-- 🔄 Função de "Reset" letivo (arquivar, exportar CSV e/ou limpar dados para iniciar um novo ano/gincana)
-
-### Para Professores
-
-- ✅ Cadastro e autenticação no sistema
-- ➕ Lançamento de pontos às equipes com descrição/justificativa
-- 🗑️ Exclusão e gerenciamento exclusivo dos **próprios lançamentos** realizados
-
-### Para Coordenação / Diretoria (Admin)
-
-- 🔑 Acesso administrativo completo (CRUD em todas as tabelas)
-- 👥 Cadastro/Gerenciamento de Alunos, Professores, Turmas, Casas (Equipes), Justificativas e Tipos de Pontuação
-- ✏️ Controle total sobre os lançamentos de pontuação (lançar, editar e/ou remover qualquer lançamento)
+**Funcionalidades:**
+- 📊 Placar público em tempo real (sem login)
+- 🔐 Autenticação JWT com dois níveis: Professor e Admin
+- ➕ Lançamento de pontos com justificativas pré-cadastradas ou personalizadas
+- 🗑️ Professor gerencia apenas seus lançamentos; Admin controla tudo
+- 📁 Exportação CSV com filtros
+- 🔄 Reset anual com backup automático
 
 ---
 
-## 👥 Perfis de Acesso
+## 🛠️ Tecnologias <a name="tecnologias"></a>
 
-| Perfil                     | Acesso                                                                                                                      |
-|:---------------------------|:----------------------------------------------------------------------------------------------------------------------------|
-| **Público (Alunos/etc)**   | Visualização apenas do placar/ranking das equipes (sem acesso aos detalhes da pontuação)                                    |
-| **Professor**              | Cadastro, login, lançamento de pontos e remoção apenas dos *próprios* pontos lançados                                       |
-| **Coordenação/Diretoria**  | Acesso Total (CRUD): gerenciar usuários (alunos/professores), turmas, casas, justificativas e exclusão irrestrita de pontos |
+| Camada    | Tecnologia                          |
+|-----------|-------------------------------------|
+| Frontend  | React 18, Vite, TailwindCSS, Axios  |
+| Backend   | Node.js, Express, JWT, bcryptjs     |
+| Banco     | MariaDB 11                          |
+| Servidor  | Nginx (frontend), PM2 (backend)     |
+| Container | Docker + Docker Compose             |
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+## 🐳 Como Rodar com Docker <a name="docker"></a>
 
-### Frontend
+### Pré-requisitos
+- Docker Desktop instalado e rodando
+- Git
 
-- **React**: Biblioteca JavaScript para construção da interface de usuário.
-- **TailwindCSS**: Framework CSS utilitário para estilização rápida e responsiva.
+### Passo a Passo
+
+```bash
+# 1. Clone o repositório
+git clone https://github.com/seu-usuario/taca-das-casas.git
+cd taca-das-casas
+
+# 2. Suba todos os serviços (MariaDB + Backend + Frontend)
+docker-compose up --build
+
+# Ou em background:
+docker-compose up --build -d
+```
+
+Aguarde ~30 segundos para o MariaDB inicializar na primeira vez.
+
+| Serviço  | URL                       |
+|----------|---------------------------|
+| Frontend | http://localhost           |
+| API      | http://localhost:3001/api  |
+| MariaDB  | localhost:3306             |
+
+### Credenciais padrão
+
+```
+Usuário: Coordenação
+Senha:   password
+```
+
+> ⚠️ **IMPORTANTE:** Troque a senha do admin imediatamente após o primeiro login!
+> 
+> Para gerar um novo hash:
+> ```bash
+> docker exec taca_backend node -e "const b=require('bcryptjs'); console.log(b.hashSync('nova_senha', 10))"
+> ```
+> Depois atualize diretamente no banco:
+> ```sql
+> UPDATE professores SET senha = 'HASH_GERADO' WHERE nome = 'Coordenação';
+> ```
+
+### Comandos úteis com Docker
+
+```bash
+# Ver logs em tempo real
+docker-compose logs -f backend
+docker-compose logs -f frontend
+
+# Parar tudo (mantém dados)
+docker-compose down
+
+# Parar e APAGAR todos os dados (banco incluído)
+docker-compose down -v
+
+# Rebuild após alterações no código
+docker-compose up --build
+```
+
+---
+
+## 💻 Como Rodar sem Docker <a name="sem-docker"></a>
+
+### Pré-requisitos
+- Node.js 20+
+- MariaDB ou MySQL rodando localmente
 
 ### Backend
 
-- **Node.js**: Ambiente de execução JavaScript no servidor.
-- **Express**: Framework web minimalista para Node.js, utilizado para criar a API.
+```bash
+cd backend
+
+# Instalar dependências
+npm install
+
+# Criar arquivo de ambiente
+cp .env.example .env
+# Edite .env com suas credenciais do banco local
+
+# Iniciar em desenvolvimento
+npm run dev
+
+# Iniciar em produção com PM2
+npm run pm2
+```
+
+### Frontend
+
+```bash
+cd frontend
+
+# Instalar dependências
+npm install
+
+# Iniciar em desenvolvimento (com proxy para o backend)
+npm run dev
+
+# Build de produção
+npm run build
+npm run preview
+```
 
 ### Banco de Dados
 
-- **MariaDB**: Sistema de gerenciamento de banco de dados relacional.
-
-### Gerenciamento de Processos
-
-- **PM2**: Um gerenciador de processos de produção para aplicações Node.js. Ele é utilizado para manter a aplicação online (rodando em segundo plano) 24 horas por dia, garantindo reinicialização automática em caso de falhas e facilitando a gestão dos logs e o monitoramento da API.
-
----
-
-## 🏷️ Padrões de Nomenclatura
-
-Para manter a organização e legibilidade do código-fonte em todo o ecossistema do projeto, adotamos as seguintes convenções de nomenclatura:
-
-### 🗄️ Banco de Dados (MariaDB)
-
-- **Tabelas**: Letras minúsculas, preferencialmente no plural e utilizando `snake_case` (Exemplo: `usuarios`, `lancamentos_pontos`).
-- **Colunas/Campos**: Utilizando `snake_case` (Exemplo: `id`, `nome_completo`, `data_criacao`).
-- **Chaves Primárias e Estrangeiras**: Chaves primárias apenas `id`, chaves estrangeiras seguem o padrão `nome_tabela_id` (Exemplo: `usuario_id`).
-
-### ⚙️ Backend (Node.js / API)
-
-- **Arquivos e Pastas**: Utilizando `kebab-case` (Exemplo: `user-routes.js`, `auth-controller.js`).
-- **Variáveis, Funções e Métodos**: Utilizando `camelCase` (Exemplo: `buscarUsuario`, `calcularPontos()`).
-- **Classes e Models**: Utilizando `PascalCase` (Exemplo: `DatabaseConnection`, `UsuarioModel`).
-- **Constantes (Globais e Env)**: Utilizando `UPPER_SNAKE_CASE` (Exemplo: `DB_HOST`, `JWT_SECRET`).
-
-### 🖥️ Frontend (React)
-
-- **Componentes e Arquivos de Componentes**: Utilizando `PascalCase` (Exemplo: `Dashboard.jsx`, `CardEquipe.tsx`).
-- **Pastas (Rotas, Contextos, Utils)**: Utilizando `kebab-case` ou uma única palavra minúscula (Exemplo: `components`, `utils`, `auth-context`).
-- **Hooks Customizados**: `camelCase` começando com o prefixo `use` (Exemplo: `useAuth()`, `usePlacar()`).
-- **Variáveis e Funções Naturais**: Utilizando `camelCase` (Exemplo: `handleClick`, `isLoading`, `usuarioLogado`).
-- **Constantes Constantes (imutáveis)**: Utilizando `UPPER_SNAKE_CASE` (Exemplo: `MAX_PONTOS_POR_LANCAMENTO`).
-
----
-
-## 💻 Como Rodar Localmente (Desenvolvimento)
-
-O projeto pode ser executado de duas maneiras: utilizando Docker (recomendado para facilitar o setup) ou rodando os serviços separadamente via Node.js.
-
-### Opção 1: Via Docker (Recomendado)
-
-Certifique-se de ter o Docker e o Docker Compose instalados. Na raiz do projeto, execute:
+Execute o script SQL manualmente:
 
 ```bash
-docker-compose up -d --build
-```
-
-- **Frontend:** Acessível em `http://localhost`
-- **Backend (API):** Acessível em `http://localhost:3000`
-- **Banco de Dados:** O MariaDB será inicializado automaticamente com o `schema.sql` (porta 3306 internamente).
-
-Para parar a execução, utilize `docker-compose down`.
-
-### Opção 2: Manualmente (Node.js e npm)
-
-Caso prefira desenvolver sem o Docker, você precisará ter o MariaDB rodando e iniciar os servidores do frontend e backend em terminais separados:
-
-**Frontend (React/Vite):**
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-**Backend (Node.js):**
-```bash
-cd backend
-npm install
-npm run dev
+mysql -u root -p < database/init.sql
 ```
 
 ---
 
-## 🚀 Orientações para Deploy e Setup
+## 👥 Perfis de Acesso <a name="perfis"></a>
 
-Para garantir que a automação e o deploy manual no servidor (via `git pull`) funcionem sem quebrar a aplicação, os desenvolvedores devem aderir às seguintes regras de configuração:
-
-### 1. Arquivos Ignorados (.gitignore)
-
-- **Imagens e Uploads**: A pasta `uploads/` **deve** permanecer no `.gitignore`. Ela armazena os brasões das equipes e imagens geradas dinamicamente. Se não for ignorada, o Git pode sobrescrever o diretório na VM e apagar os arquivos enviados pelos usuários.
-- **Dependências e Builds**: Pastas como `node_modules/`, `build/` e `dist/` nunca devem ser comitadas.
-- **Dados Sensíveis**: O arquivo `.env` definitivo não deve ir para o GitHub.
-
-### 2. Variáveis de Ambiente
-
-- O projeto possui um arquivo `.env.example` com chaves vazias (como `DB_PASSWORD=` e `API_URL=`).
-- No ambiente local, as variáveis apontam para o `localhost` e usam credenciais de desenvolvimento.
-- **Na VM (Produção)**: A equipe criará um `.env` real preenchido com os dados definitivos (como o IP da Oracle Cloud e as senhas do MariaDB). O frontend utilizará essa variável para rotear o login corretamente.
-
-### 3. Scripts Padronizados (package.json)
-
-Para que o servidor consiga inicializar o projeto corretamente, utilize scripts padronizados:
-
-- **Frontend**: Garanta a existência de um script `"build"` para compilar os estáticos do React.
-- **Backend**: Configure um script `"start"`. No servidor, não usaremos `nodemon` ou `node index.js` diretamente; o backend rodará através do **PM2**, garantindo a reinicialização automática em caso de *crash*.
-
-### 4. Controle do Banco de Dados (Migrations)
-
-Como o banco de dados local difere do servidor de produção, exportações manuais não devem ser feitas para transferir informações.
-
-- Centralize as alterações (como adicionar colunas novas) na pasta `/sql/`.
-- Crie scripts `.sql` para cada modificação (migration) feita na sprint.
-- No servidor, apenas aplique os scripts correspondentes para atualizar o esquema sem correr o risco de perder dados que já estão cadastrados.
+| Perfil                 | `permissao` | Capacidades                                              |
+|------------------------|-------------|----------------------------------------------------------|
+| Público                | —           | Ver placar/ranking (sem login)                           |
+| Professor              | `1`         | Login, lançar pontos, ver/deletar **seus** lançamentos   |
+| Coordenação / Admin    | `2`         | CRUD completo de tudo, deletar qualquer lançamento, exportar CSV, reset anual |
 
 ---
 
-## ☁️ Infraestrutura e Hospedagem
+## 📡 Endpoints da API <a name="endpoints"></a>
 
-A aplicação está hospedada e configurada com as seguintes tecnologias de infraestrutura:
+**Base URL:** `http://localhost:3001/api`
 
-| Tecnologia               | Descrição / Uso                                      |
-|:-------------------------|:-----------------------------------------------------|
-| **Oracle Cloud**         | Provedor de computação em nuvem em que o servidor está hospedado. |
-| **Ubuntu 20.04**         | Sistema operacional (Linux) rodando no servidor.     |
-| **Nginx**                | Servidor web atuando como proxy reverso para a API Node.js e servindo os arquivos estáticos do Frontend. |
-| **DuckDNS**              | Serviço de DNS dinâmico gratuito para associar o IP do servidor a um domínio amigável. |
-| **Certbot / Let's Encrypt** | Automação e geração de certificados SSL/TLS para garantir a segurança da comunicação via protocolo HTTPS. |
+### 🔓 Públicos (sem autenticação)
+
+| Método | Endpoint        | Descrição                        |
+|--------|-----------------|----------------------------------|
+| GET    | `/ranking`      | Placar geral com pontos por casa |
+| GET    | `/casas`        | Lista todas as casas             |
+| GET    | `/turmas`       | Lista todas as turmas            |
+| GET    | `/health`       | Health check do servidor         |
+
+### 🔐 Autenticação
+
+| Método | Endpoint        | Descrição                        |
+|--------|-----------------|----------------------------------|
+| POST   | `/auth/login`   | Login — retorna token JWT        |
+
+### 👨‍🏫 Professor (requer `Bearer token`)
+
+| Método | Endpoint               | Descrição                                  |
+|--------|------------------------|--------------------------------------------|
+| GET    | `/lancamentos`         | Lista seus lançamentos (+ filtros)         |
+| POST   | `/lancamentos`         | Cria novo lançamento                       |
+| DELETE | `/lancamentos/:id`     | Deleta seu próprio lançamento              |
+| GET    | `/justificativas`      | Lista justificativas disponíveis           |
+| GET    | `/alunos`              | Lista alunos (filtros: turma_id, casa_id)  |
+
+### 🛡️ Admin (requer token com `permissao: 2`)
+
+| Método | Endpoint                    | Descrição                          |
+|--------|-----------------------------|------------------------------------|
+| GET    | `/professores`              | Lista professores                  |
+| POST   | `/professores`              | Cria professor                     |
+| PUT    | `/professores/:id`          | Atualiza professor                 |
+| DELETE | `/professores/:id`          | Remove professor                   |
+| POST   | `/casas`                    | Cria casa                          |
+| PUT    | `/casas/:id`                | Atualiza casa                      |
+| DELETE | `/casas/:id`                | Remove casa                        |
+| POST   | `/turmas`                   | Cria turma                         |
+| PUT    | `/turmas/:id`               | Atualiza turma                     |
+| DELETE | `/turmas/:id`               | Remove turma                       |
+| POST   | `/alunos`                   | Cria aluno                         |
+| PUT    | `/alunos/:id`               | Atualiza aluno                     |
+| DELETE | `/alunos/:id`               | Remove aluno                       |
+| POST   | `/justificativas`           | Cria justificativa                 |
+| PUT    | `/justificativas/:id`       | Atualiza justificativa             |
+| DELETE | `/justificativas/:id`       | Remove justificativa               |
+| DELETE | `/lancamentos/:id`          | Remove qualquer lançamento         |
+| GET    | `/export/lancamentos`       | Exporta lançamentos como CSV       |
+| GET    | `/export/ranking`           | Exporta ranking como CSV           |
+| POST   | `/export/reset`             | Reset anual + backup CSV           |
 
 ---
 
-## 👨‍💻 Equipe
+## 📨 Exemplos de Requisição <a name="exemplos"></a>
 
-| Membro   | Papel                                         |
-|:---------|:----------------------------------------------|
-| **Cauê** | PO (Product Owner) & Dba                      |
-| **Caio** | Dev full stack                                |
-| **Luiz** | Documentador                                  |
--
----
+### Login
+```http
+POST /api/auth/login
+Content-Type: application/json
 
-## 📐 Metodologia
+{
+  "nome": "Coordenação",
+  "senha": "password"
+}
+```
 
-O desenvolvimento seguirá a metodologia **Scrum**, com as seguintes práticas:
-
-- **Sprints** com duração quinzenal (2 semanas)
-- **Quadro Kanban** no [Trello](https://trello.com) para organização das tarefas
-- **Sprint Reviews** para validação das entregas
-
----
-
-## 🎓 Informações Acadêmicas
-
-| Campo                | Detalhe                                         |
-|:---------------------|:------------------------------------------------|
-| **Instituição**      | UniCEUB — Centro Universitário de Brasília       |
-| **Curso**            | Ciências da Computação                           |
-| **Disciplina**       | Projeto Integrador 2                             |
-| **Semestre**         | 2026/1                                           |
+**Resposta:**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "usuario": {
+    "id": 1,
+    "nome": "Coordenação",
+    "permissao": 2,
+    "casa_id": 1
+  }
+}
+```
 
 ---
 
-## 📊 Status do Projeto
+### Lançar Pontos (justificativa padrão)
+```http
+POST /api/lancamentos
+Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+Content-Type: application/json
 
-- [x] Definição da ideia do projeto
-- [x] Escolha das tecnologias
-- [x] Criação do repositório
-- [x] Reunião com o cliente (CEF 102 Norte) e levantamento de requisitos
-- [ ] Definição detalhada dos requisitos funcionais e não funcionais
-- [ ] Prototipação das telas (wireframes)
-- [ ] Modelagem do banco de dados (MariaDB)
-- [ ] Configuração do ambiente de desenvolvimento e VPS
-- [ ] Desenvolvimento do módulo de autenticação e API (Express)
-- [ ] Desenvolvimento do frontend (React + TailwindCSS)
-- [ ] Testes e validação
-- [ ] Deploy na Oracle Cloud (PM2, Nginx, SSL)
-- [ ] Entrega final
+{
+  "casa_id": 1,
+  "turma_id": 2,
+  "aluno_id": 5,
+  "justificativa_id": 3,
+  "is_custom": false,
+  "turno": "Matutino"
+}
+```
+
+---
+
+### Lançar Pontos (justificativa personalizada)
+```http
+POST /api/lancamentos
+Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+Content-Type: application/json
+
+{
+  "casa_id": 2,
+  "is_custom": true,
+  "custom_justificativa": "Vencedor da gincana de matemática",
+  "pontuacao": 100,
+  "turno": "Vespertino"
+}
+```
+
+---
+
+### Ver Placar (público)
+```http
+GET /api/ranking
+```
+
+**Resposta:**
+```json
+[
+  { "id": 1, "nome": "Casa Leão", "brasao": "🦁", "total_pontos": 350, "total_lancamentos": 12 },
+  { "id": 3, "nome": "Casa Serpente", "brasao": "🐍", "total_pontos": 280, "total_lancamentos": 9 },
+  { "id": 2, "nome": "Casa Águia", "brasao": "🦅", "total_pontos": 220, "total_lancamentos": 7 },
+  { "id": 4, "nome": "Casa Lobo", "brasao": "🐺", "total_pontos": 190, "total_lancamentos": 6 }
+]
+```
+
+---
+
+### Exportar CSV com filtros
+```http
+GET /api/export/lancamentos?casa_id=1&data_inicio=2025-01-01
+Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+```
+
+---
+
+### Reset Anual
+```http
+POST /api/export/reset
+Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+Content-Type: application/json
+
+{ "confirmar": true }
+```
+> Retorna um arquivo `.csv` com backup completo e deleta todos os lançamentos.
+
+---
+
+## 🗂️ Estrutura do Projeto <a name="estrutura"></a>
+
+```
+taca-das-casas/
+├── docker-compose.yml
+├── database/
+│   └── init.sql                  # Schema + dados iniciais
+│
+├── backend/
+│   ├── index.js                  # Entry point
+│   ├── ecosystem.config.js       # Config PM2
+│   ├── Dockerfile
+│   ├── package.json
+│   └── src/
+│       ├── app.js                # Express + middlewares + rotas
+│       ├── config/
+│       │   └── database.js       # Pool de conexões MariaDB
+│       ├── middlewares/
+│       │   └── auth.middleware.js # JWT + autorização admin
+│       ├── repositories/         # Queries SQL (acesso ao banco)
+│       │   ├── auth.repository.js
+│       │   ├── casas.repository.js
+│       │   ├── turmas.repository.js
+│       │   ├── professores.repository.js
+│       │   ├── alunos.repository.js
+│       │   ├── justificativas.repository.js
+│       │   └── lancamentos.repository.js
+│       ├── services/             # Regras de negócio
+│       │   ├── auth.service.js
+│       │   ├── casas.service.js
+│       │   ├── turmas.service.js
+│       │   ├── professores.service.js
+│       │   ├── alunos.service.js
+│       │   ├── justificativas.service.js
+│       │   └── lancamentos.service.js
+│       ├── controllers/          # Recebe HTTP, chama service
+│       │   ├── auth.controller.js
+│       │   ├── casas.controller.js
+│       │   ├── turmas.controller.js
+│       │   ├── professores.controller.js
+│       │   ├── alunos.controller.js
+│       │   ├── justificativas.controller.js
+│       │   └── lancamentos.controller.js
+│       └── routes/               # Define os endpoints HTTP
+│           ├── auth.routes.js
+│           ├── casas.routes.js
+│           ├── turmas.routes.js
+│           ├── professores.routes.js
+│           ├── alunos.routes.js
+│           ├── justificativas.routes.js
+│           ├── lancamentos.routes.js
+│           ├── ranking.routes.js
+│           └── export.routes.js
+│
+└── frontend/
+    ├── Dockerfile                # Multi-stage: Vite build + Nginx
+    ├── nginx.conf                # SPA routing + proxy para API
+    ├── vite.config.js
+    ├── tailwind.config.js
+    ├── index.html
+    └── src/
+        ├── main.jsx
+        ├── App.jsx               # Rotas + guards de autenticação
+        ├── index.css             # Tema dark + componentes Tailwind
+        ├── context/
+        │   └── AuthContext.jsx   # Estado global de autenticação
+        ├── services/
+        │   └── api.js            # Axios com interceptors JWT
+        ├── components/
+        │   ├── layout/
+        │   │   ├── Layout.jsx    # Wrapper com Navbar + footer
+        │   │   └── Navbar.jsx    # Responsivo + dropdown admin
+        │   └── ui/
+        │       ├── CrudTable.jsx # Tabela genérica reutilizável
+        │       └── Modal.jsx     # Modal genérico
+        └── pages/
+            ├── public/
+            │   ├── Dashboard.jsx # Placar público (atualiza a cada 30s)
+            │   └── Login.jsx
+            ├── professor/
+            │   ├── LancarPontos.jsx
+            │   └── MeusLancamentos.jsx
+            └── admin/
+                ├── AdminLancamentos.jsx
+                ├── AdminCasas.jsx
+                ├── AdminTurmas.jsx
+                ├── AdminProfessores.jsx
+                ├── AdminAlunos.jsx
+                └── AdminJustificativas.jsx
+```
+
+---
+
+## 🔒 Segurança em Produção
+
+Antes de ir para produção, altere obrigatoriamente:
+
+1. **`docker-compose.yml`** — senhas do banco (`MARIADB_ROOT_PASSWORD`, `MARIADB_PASSWORD`)
+2. **`JWT_SECRET`** — use uma string aleatória longa (mín. 32 chars)
+3. **Senha do admin** — troque via SQL após o primeiro login
+4. **`FRONTEND_URL`** no backend — restrinja ao domínio real
+
+```bash
+# Gerar JWT_SECRET seguro
+node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+```
 
 ---
 
 ## 📄 Licença
 
-Este projeto de caráter acadêmico é de código aberto e está licenciado sob a **[GNU General Public License v3.0 (GPLv3)](LICENSE)**.
-
-O projeto foi desenvolvido como parte da disciplina **Projeto Integrador 2** do curso de **Ciências da Computação** do **UniCEUB**.
-
----
-
-<p align="center">
-  Feito com ❤️ pela equipe do Taça das Casas — UniCEUB 2026
-</p>
+MIT — CEF 102 Norte · Brasília, DF
