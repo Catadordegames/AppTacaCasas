@@ -54,7 +54,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-dark-900 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-background-900 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         {/* Logo */}
         <LoginLogo />
@@ -126,10 +126,10 @@ export default function Login() {
 function LoginLogo() {
   return (
     <div className="text-center mb-8">
-      <div className="inline-flex items-center justify-center w-16 h-16 bg-gold-500/10 border border-gold-500/30 rounded-2xl mb-4">
-        <Trophy size={32} className="text-gold-400" />
+      <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-500/10 border border-primary-500/30 rounded-2xl mb-4">
+        <Trophy size={32} className="text-primary-400" />
       </div>
-      <h1 className="text-2xl font-display font-bold text-gold-400">Taça das Casas</h1>
+      <h1 className="text-2xl font-display font-bold text-primary-400">Taça das Casas</h1>
       <p className="text-gray-500 text-sm mt-1">CEF 102 Norte</p>
     </div>
   )

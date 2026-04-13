@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, GraduationCap } from 'lucide-react'
-import api from '../../services/api'
+import { useCrud } from '../../hooks/useCrud'
+import { useFetch } from '../../hooks/useFetch'
 import toast from 'react-hot-toast'
 import CrudTable from '../../components/ui/CrudTable'
 import Modal from '../../components/ui/Modal'
@@ -8,35 +9,23 @@ import Modal from '../../components/ui/Modal'
 const FORM_VAZIO = { nome: '', turma_id: '', casa_id: '' }
 
 export default function AdminAlunos() {
-  const [alunos, setAlunos] = useState([])
-  const [casas, setCasas] = useState([])
-  const [turmas, setTurmas] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [modalAberto, setModalAberto] = useState(false)
-  const [editando, setEditando] = useState(null)
-  const [form, setForm] = useState(FORM_VAZIO)
-  const [salvando, setSalvando] = useState(false)
-  const [deletando, setDeletando] = useState(null)
   const [filtroTurma, setFiltroTurma] = useState('')
   const [filtroCasa, setFiltroCasa] = useState('')
 
-  const carregar = useCallback(async () => {
-    try {
-      setLoading(true)
-      const params = new URLSearchParams()
-      if (filtroTurma) params.append('turma_id', filtroTurma)
-      if (filtroCasa)  params.append('casa_id', filtroCasa)
-      const [a, c, t] = await Promise.all([
-        api.get(`/alunos?${params}`),
-        api.get('/casas'),
-        api.get('/turmas'),
-      ])
-      setAlunos(a.data); setCasas(c.data); setTurmas(t.data)
-    } catch { toast.error('Erro ao carregar.') }
-    finally { setLoading(false) }
-  }, [filtroTurma, filtroCasa])
+  const { data: alunos, loading, loadingSave: salvando, loadingDelete: deletando, load: loadAlunos, save, remove } = useCrud('/alunos', 'Aluno')
+  const { data: casas } = useFetch('/casas')
+  const { data: turmas } = useFetch('/turmas')
 
-  useEffect(() => { carregar() }, [carregar])
+  const [modalAberto, setModalAberto] = useState(false)
+  const [editando, setEditando] = useState(null)
+  const [form, setForm] = useState(FORM_VAZIO)
+
+  useEffect(() => {
+    const params = new URLSearchParams()
+    if (filtroTurma) params.append('turma_id', filtroTurma)
+    if (filtroCasa) params.append('casa_id', filtroCasa)
+    loadAlunos(params.toString())
+  }, [filtroTurma, filtroCasa, loadAlunos])
 
   const abrirCriar = () => { setEditando(null); setForm(FORM_VAZIO); setModalAberto(true) }
   const abrirEditar = (a) => {
@@ -49,22 +38,15 @@ export default function AdminAlunos() {
   const handleSalvar = async (e) => {
     e.preventDefault()
     try {
-      setSalvando(true)
       const payload = { ...form, turma_id: Number(form.turma_id), casa_id: form.casa_id ? Number(form.casa_id) : null }
-      if (editando) { await api.put(`/alunos/${editando.id}`, payload); toast.success('Aluno atualizado!') }
-      else { await api.post('/alunos', payload); toast.success('Aluno criado!') }
-      fecharModal(); carregar()
-    } catch (err) { toast.error(err.response?.data?.error || 'Erro ao salvar.') }
-    finally { setSalvando(false) }
+      await save(payload, editando?.id)
+      fecharModal()
+    } catch {} // Handled internally by useCrud
   }
 
   const handleDeletar = async (a) => {
     if (!confirm(`Deletar o aluno "${a.nome}"?`)) return
-    try {
-      setDeletando(a.id); await api.delete(`/alunos/${a.id}`)
-      toast.success('Aluno removido.'); setAlunos((prev) => prev.filter((x) => x.id !== a.id))
-    } catch (err) { toast.error(err.response?.data?.error || 'Erro ao deletar.') }
-    finally { setDeletando(null) }
+    await remove(a.id)
   }
 
   const columns = [
@@ -77,7 +59,7 @@ export default function AdminAlunos() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <GraduationCap size={22} className="text-gold-400" />
+          <GraduationCap size={22} className="text-primary-400" />
           <h1 className="text-2xl font-display font-bold text-white">Alunos</h1>
         </div>
         <button onClick={abrirCriar} className="btn-primary flex items-center gap-2 text-sm">
@@ -97,7 +79,7 @@ export default function AdminAlunos() {
         </select>
       </div>
 
-      <div className="card border border-dark-600">
+      <div className="card border border-background-600">
         <CrudTable columns={columns} data={alunos} loading={loading}
           onEdit={abrirEditar} onDelete={handleDeletar} deletando={deletando}
           searchPlaceholder="Buscar aluno..." />

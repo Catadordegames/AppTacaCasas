@@ -62,7 +62,7 @@ export default function AdminJustificativas() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Tag size={22} className="text-gold-400" />
+          <Tag size={22} className="text-primary-400" />
           <h1 className="text-2xl font-display font-bold text-white">Justificativas</h1>
         </div>
         <button onClick={abrirCriar} className="btn-primary flex items-center gap-2 text-sm">
@@ -70,7 +70,7 @@ export default function AdminJustificativas() {
         </button>
       </div>
 
-      <div className="card border border-dark-600">
+      <div className="card border border-background-600">
         <CrudTable columns={columns} data={justificativas} loading={loading}
           onEdit={abrirEditar} onDelete={handleDeletar} deletando={deletando}
           searchPlaceholder="Buscar justificativa..." />

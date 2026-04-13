@@ -19,9 +19,9 @@ const sizeMap = {
 }
 
 const colorMap = {
-    gold: 'border-gold-500 border-t-transparent',
+    gold: 'border-primary-500 border-t-transparent',
     white: 'border-white border-t-transparent',
-    dark: 'border-dark-900 border-t-transparent',
+    dark: 'border-background-900 border-t-transparent',
 }
 
 export default function LoadingSpinner({

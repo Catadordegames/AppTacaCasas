@@ -58,7 +58,7 @@ export default function MeusLancamentos() {
     <div className="space-y-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
-          <List size={24} className="text-gold-400" />
+          <List size={24} className="text-primary-400" />
           <h1 className="text-2xl font-display font-bold text-white">Meus Lançamentos</h1>
         </div>
         <div className="flex items-center gap-2">
@@ -76,8 +76,8 @@ export default function MeusLancamentos() {
 
       {/* Resumo */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="card border border-dark-500 text-center">
-          <div className="text-2xl font-display font-bold text-gold-400">{lancamentos.length}</div>
+        <div className="card border border-background-500 text-center">
+          <div className="text-2xl font-display font-bold text-primary-400">{lancamentos.length}</div>
           <div className="text-xs text-gray-500 mt-0.5">Lançamentos</div>
         </div>
         <div className={`card border text-center ${total >= 0 ? 'border-green-500/30' : 'border-red-500/30'}`}>
@@ -91,17 +91,17 @@ export default function MeusLancamentos() {
       {/* Lista */}
       {loading ? (
         <div className="flex justify-center py-12">
-          <div className="w-8 h-8 border-2 border-gold-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : lancamentos.length === 0 ? (
-        <div className="card text-center py-12 text-gray-500 border border-dark-600">
+        <div className="card text-center py-12 text-gray-500 border border-background-600">
           <List size={36} className="mx-auto mb-3 opacity-30" />
           <p>Nenhum lançamento encontrado.</p>
         </div>
       ) : (
         <div className="space-y-2">
           {lancamentos.map((l) => (
-            <div key={l.id} className="card border border-dark-600 flex items-start gap-3">
+            <div key={l.id} className="card border border-background-600 flex items-start gap-3">
               {/* Pontuação */}
               <div className={`flex-shrink-0 w-14 text-center font-display font-bold text-lg rounded-lg py-1
                 ${l.pontuacao > 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
