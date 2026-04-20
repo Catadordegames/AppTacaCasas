@@ -1,58 +1,20 @@
 // ============================================================
 // pages/professor/MeusLancamentos.jsx
-// Professor vê e deleta apenas seus próprios lançamentos.
+// View: Layout para visualização e exclusão de lançamentos.
 // ============================================================
 
-import { useState, useEffect, useCallback } from 'react'
 import { Trash2, List, Filter } from 'lucide-react'
-import api from '../../services/api'
-import toast from 'react-hot-toast'
+import useMeusLancamentos from '../../hooks/useMeusLancamentos'
 
 function formatDate(dt) {
   return new Date(dt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
 }
 
 export default function MeusLancamentos() {
-  const [lancamentos, setLancamentos] = useState([])
-  const [casas, setCasas] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [deletando, setDeletando] = useState(null)
-  const [filtroCasa, setFiltroCasa] = useState('')
-
-  const carregar = useCallback(async () => {
-    try {
-      setLoading(true)
-      const params = filtroCasa ? `?casa_id=${filtroCasa}` : ''
-      const [l, c] = await Promise.all([
-        api.get(`/lancamentos${params}`),
-        api.get('/casas'),
-      ])
-      setLancamentos(l.data)
-      setCasas(c.data)
-    } catch {
-      toast.error('Erro ao carregar lançamentos.')
-    } finally {
-      setLoading(false)
-    }
-  }, [filtroCasa])
-
-  useEffect(() => { carregar() }, [carregar])
-
-  const deletar = async (id) => {
-    if (!confirm('Remover este lançamento?')) return
-    try {
-      setDeletando(id)
-      await api.delete(`/lancamentos/${id}`)
-      toast.success('Lançamento removido.')
-      setLancamentos((prev) => prev.filter((l) => l.id !== id))
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'Erro ao remover.')
-    } finally {
-      setDeletando(null)
-    }
-  }
-
-  const total = lancamentos.reduce((s, l) => s + l.pontuacao, 0)
+  const {
+    lancamentos, casas, loading, deletando,
+    filtroCasa, setFiltroCasa, total, deletar
+  } = useMeusLancamentos()
 
   return (
     <div className="space-y-5">
@@ -74,7 +36,6 @@ export default function MeusLancamentos() {
         </div>
       </div>
 
-      {/* Resumo */}
       <div className="grid grid-cols-2 gap-3">
         <div className="card border border-background-500 text-center">
           <div className="text-2xl font-display font-bold text-primary-400">{lancamentos.length}</div>
@@ -88,7 +49,6 @@ export default function MeusLancamentos() {
         </div>
       </div>
 
-      {/* Lista */}
       {loading ? (
         <div className="flex justify-center py-12">
           <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
@@ -102,13 +62,11 @@ export default function MeusLancamentos() {
         <div className="space-y-2">
           {lancamentos.map((l) => (
             <div key={l.id} className="card border border-background-600 flex items-start gap-3">
-              {/* Pontuação */}
               <div className={`flex-shrink-0 w-14 text-center font-display font-bold text-lg rounded-lg py-1
                 ${l.pontuacao > 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
                 {l.pontuacao > 0 ? '+' : ''}{l.pontuacao}
               </div>
 
-              {/* Detalhes */}
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-white text-sm truncate">{l.justificativa_snapshot}</p>
                 <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-xs text-gray-500">
@@ -119,7 +77,6 @@ export default function MeusLancamentos() {
                 </div>
               </div>
 
-              {/* Botão deletar */}
               <button
                 onClick={() => deletar(l.id)}
                 disabled={deletando === l.id}

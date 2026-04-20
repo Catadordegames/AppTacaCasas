@@ -1,65 +1,19 @@
 // ============================================================
 // views/public/Login.jsx
-// Página de login com formulário autenticação.
+// View: Interface de login.
 // ============================================================
 
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { Trophy, Lock, User, Eye, EyeOff } from 'lucide-react'
-import toast from 'react-hot-toast'
-
-import { useAuth } from '../../context/AuthContext'
+import useLogin from '../../hooks/useLogin'
 import { Button, Input, Card, CardHeader, CardTitle, CardContent } from '../../components/ui'
-import { isRequired } from '../../utils/validators'
 
 export default function Login() {
-  const { login } = useAuth()
-  const navigate = useNavigate()
-
-  const [form, setForm] = useState({ nome: '', senha: '' })
-  const [showSenha, setShowSenha] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [errors, setErrors] = useState({})
-
-  const validate = () => {
-    const newErrors = {}
-    if (!isRequired(form.nome)) newErrors.nome = 'Campo obrigatório'
-    if (!isRequired(form.senha)) newErrors.senha = 'Campo obrigatório'
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleChange = (field, value) => {
-    setForm((prev) => ({ ...prev, [field]: value }))
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }))
-    }
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-
-    if (!validate()) return
-
-    try {
-      setLoading(true)
-      await login(form.nome.trim(), form.senha)
-      toast.success('Bem-vindo(a)!')
-      navigate('/lancar')
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'Credenciais inválidas.')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const { form, errors, loading, showSenha, setShowSenha, handleChange, handleSubmit } = useLogin()
 
   return (
     <div className="min-h-screen bg-background-900 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        {/* Logo */}
         <LoginLogo />
-
-        {/* Card de login */}
         <Card>
           <CardHeader>
             <CardTitle>Entrar no Sistema</CardTitle>
@@ -76,7 +30,6 @@ export default function Login() {
                 autoComplete="username"
                 disabled={loading}
               />
-
               <Input
                 label="Senha"
                 type={showSenha ? 'text' : 'password'}
@@ -98,20 +51,12 @@ export default function Login() {
                 autoComplete="current-password"
                 disabled={loading}
               />
-
-              <Button
-                type="submit"
-                loading={loading}
-                disabled={loading}
-                fullWidth
-                className="mt-2"
-              >
+              <Button type="submit" loading={loading} disabled={loading} fullWidth className="mt-2">
                 {loading ? 'Entrando...' : 'Entrar'}
               </Button>
             </form>
           </CardContent>
         </Card>
-
         <p className="text-center text-xs text-gray-600 mt-4">
           Apenas professores e coordenação têm acesso ao sistema.
         </p>
@@ -120,9 +65,6 @@ export default function Login() {
   )
 }
 
-/**
- * Componente do logo da tela de login
- */
 function LoginLogo() {
   return (
     <div className="text-center mb-8">

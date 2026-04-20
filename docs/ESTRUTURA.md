@@ -26,6 +26,7 @@ Este documento descreve a estrutura de arquitetura, pacotes e diretórios organi
 │   └── 📁 src/                         # → Lógica de negócio Frontend escrita em React
 │       ├── 📁 components/              # → Componentes reaproveitáveis de UI e layout
 │       ├── 📁 context/                 # → Hooks de contexto global (AuthContext e etc)
+│       ├── 📁 hooks/                   # → Controladores locais estritos das Views
 │       ├── 📁 services/                # → Libs internas (Manipuladores de Requisição Axios)
 │       ├── 📁 utils/                   # → Extratores, formatadores e classes dinâmicas
 │       └── 📁 views/                   # → Templates visuais principais da interface (Páginas)

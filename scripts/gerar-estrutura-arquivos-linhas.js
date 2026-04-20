@@ -33,6 +33,7 @@ const DESCRIPTIONS = {
   'frontend/src': 'Lógica de negócio Frontend escrita em React',
   'frontend/src/components': 'Componentes reaproveitáveis de UI e layout',
   'frontend/src/context': 'Hooks de contexto global (AuthContext e etc)',
+  'frontend/src/hooks': 'Controladores estritos das Views (Custom Hooks)',
   'frontend/src/services': 'Libs internas (Manipuladores de Requisição Axios)',
   'frontend/src/utils': 'Extratores, formatadores e classes dinâmicas',
   'frontend/src/views': 'Templates visuais principais da interface (Páginas)',
