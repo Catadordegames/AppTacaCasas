@@ -46,19 +46,19 @@ Sistema web de gerenciamento de gincana escolar. O escopo encontra-se no `README
 
 ## 5. REGRAS PARA FRONTEND, ARQUITETURA E "DRY"
 
-### Separação de Preocupações
+### Arquitetura MVC (Model-View-Controller) e Separação de Preocupações
 
-Mantenha a estrita separação entre a interface visual (Frontend) e a lógica sensível de dados (Backend).
+O projeto adota o padrão arquitetural **MVC (Model-View-Controller)** adaptado para uma aplicação moderna com API e SPA.
+Mantenha a estrita separação entre a interface visual (A camada *View*, no Frontend) e a lógica sensível e controle de dados (As camadas *Controller* e *Model*, no Backend).
 
-As divisões cruciais do **Backend Node** (`backend/src/`) separam-se rigidamente em:
+As divisões cruciais do **Backend Node** (`backend/src/`) seguem a estrutura de controle e modelos:
+- **Controllers (`controllers/`)**: Gerenciam as requisições HTTP, validam entradas e orquestram respostas.
+- **Models / Repositories (`repositories/`)**: Representam a camada de abstração de dados (Model). O acesso ao MariaDB e queries cruas ocorrem *somente* aqui. Nunca vaze esse escopo para o controller.
+- Camadas auxiliares de apoio: `middlewares/`, `routes/` e `services/`.
 
-- `controllers/`, `middlewares/`, `repositories/`, `routes/` e `services/`.
-- O acesso ao banco e queries ocorrem somente via `repositories`. Nunca vaze esse escopo.
-
-As divisões do **Frontend React** (`frontend/src/`):
-
-- `components/` gerem componentes abstratos para composição.
-- `pages/` implementam a orquestração completa das rotas.
+A camada de interface (**Frontend React**, em `frontend/src/`) compõe a View:
+- `views/` (ou `pages/`): Implementam as telas finais e orquestração visual dos Controllers do React.
+- `components/`: Gerem componentes abstratos para composição das views.
 - `services/` concentram as chamadas externas via Axios para o backend.
 
 ### Princípio DRY (Don't Repeat Yourself) / Funções Utilitárias
@@ -102,5 +102,5 @@ npm run dev
 > Quando terminar as implementações e verificar o funcionamento finalizado na codebase:
 >
 > 1. Observe e preserve o schema `database/init.sql` ou repasses de `routes/`. Toda alteração deve constar nas exportações do controller.
-> 2. Documente as mudanças na estrutura referenciada em `docs/ESTRUTURA.md` se tiver alterado substancialmente regras fundamentais ou inserido pacotes imprevistos de larga escala.
+> 2. Documente as mudanças na estrutura referenciada em `docs/ESTRUTURA.md` se tiver criado ou movido pastas, e obrigatoriamente **rode o script** `node scripts/gerar-estrutura-arquivos-linhas.js` para atualizar o `docs/ESTRUTURA-LINHAS.md`.
 > 3. Feche o log com as diretrizes do diário requeridos no arquivo de REGRAS central.

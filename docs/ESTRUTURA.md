@@ -13,15 +13,14 @@ Este documento descreve a estrutura de arquitetura, pacotes e diretórios organi
 ├── 📄 docker-compose.yml               # → Orquestração local com React, API e MariaDB
 ├── 📄 README.md                        # → Documentação principal do projeto
 ├── 📁 backend/                         # → Servidor backend API (Node + Express)
-│   ├── 📁 alunos/                      # → Domínio de Alunos
-│   ├── 📁 auth/                        # → Autenticação e middlewares JWT
-│   ├── 📁 casas/                       # → Domínio de Casas
-│   ├── 📁 justificativas/              # → Domínio de Justificativas
-│   ├── 📁 lancamentos/                 # → Domínio de Lançamentos de Pontos
-│   ├── 📁 professores/                 # → Domínio de Professores
-│   ├── 📁 turmas/                      # → Domínio de Turmas
-│   ├── 📄 app.js                       # → Instância principal do Express
-│   └── 📄 database.js                  # → Inicialização e conexão ao MariaDB
+│   └── 📁 src/                         # → Lógica de backend Node (MVC)
+│       ├── 📁 config/                  # → Configurações de banco, app
+│       ├── 📁 controllers/             # → Controladores HTTP
+│       ├── 📁 middlewares/             # → Filtros e middlewares Express
+│       ├── 📁 repositories/            # → Acesso a dados MariaDB
+│       ├── 📁 routes/                  # → Definição de Rotas API
+│       ├── 📁 services/                # → Regras de Negócio
+│       └── 📄 app.js                   # → Instância principal do Express
 ├── 📁 frontend/                        # → Interface da aplicação (React + Vite)
 │   ├── 📁 public/                      # → Assets públicos acessíveis externamente
 │   └── 📁 src/                         # → Lógica de negócio Frontend escrita em React
