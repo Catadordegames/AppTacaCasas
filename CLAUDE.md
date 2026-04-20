@@ -51,10 +51,12 @@ Sistema web de gerenciamento de gincana escolar. O escopo encontra-se no `README
 Mantenha a estrita separação entre a interface visual (Frontend) e a lógica sensível de dados (Backend).
 
 As divisões cruciais do **Backend Node** (`backend/src/`) separam-se rigidamente em:
+
 - `controllers/`, `middlewares/`, `repositories/`, `routes/` e `services/`.
 - O acesso ao banco e queries ocorrem somente via `repositories`. Nunca vaze esse escopo.
 
 As divisões do **Frontend React** (`frontend/src/`):
+
 - `components/` gerem componentes abstratos para composição.
 - `pages/` implementam a orquestração completa das rotas.
 - `services/` concentram as chamadas externas via Axios para o backend.
@@ -66,6 +68,7 @@ As divisões do **Frontend React** (`frontend/src/`):
 ### Design System (UI / Estilos / Classes CSS)
 
 Ao atuar no Frontend com Tailwind CSS e React:
+
 - Mantenha conformidade com atributos predefinidos pelo projeto via `tailwind.config.js`. Respeite o arranjo de modais genéricos (`Modal.jsx`) e tipografia base já integrados.
 - Priorize um design moderno de tema escuro, com transições em hover utilizando Tailwind.
 - **MANDATÓRIO:** Consulte SEMPRE o mapa de classes configurado em `agentes/paleta-cores.md` antes de criar ou modificar `views/` e `components/` no frontend, para não quebrar a coesão padrão das cores.
