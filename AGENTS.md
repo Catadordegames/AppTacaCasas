@@ -52,11 +52,13 @@ O projeto adota o padrão arquitetural **MVC (Model-View-Controller)** adaptado 
 Mantenha a estrita separação entre a interface visual (A camada *View*, no Frontend) e a lógica sensível e controle de dados (As camadas *Controller* e *Model*, no Backend).
 
 As divisões cruciais do **Backend Node** (`backend/src/`) seguem a estrutura de controle e modelos:
+
 - **Controllers (`controllers/`)**: Gerenciam as requisições HTTP, validam entradas e orquestram respostas.
 - **Models / Repositories (`repositories/`)**: Representam a camada de abstração de dados (Model). O acesso ao MariaDB e queries cruas ocorrem *somente* aqui. Nunca vaze esse escopo para o controller.
 - Camadas auxiliares de apoio: `middlewares/`, `routes/` e `services/`.
 
 A camada de interface (**Frontend React**, em `frontend/src/`) compõe a View:
+
 - `views/` (ou `pages/`): Implementam as telas finais e orquestração visual dos Controllers do React.
 - `components/`: Gerem componentes abstratos para composição das views.
 - `services/` concentram as chamadas externas via Axios para o backend.
@@ -68,9 +70,15 @@ A camada de interface (**Frontend React**, em `frontend/src/`) compõe a View:
 ### Design System (UI / Estilos / Classes CSS)
 
 Ao atuar no Frontend com Tailwind CSS e React:
+
 - Mantenha conformidade com atributos predefinidos pelo projeto via `tailwind.config.js`. Respeite o arranjo de modais genéricos (`Modal.jsx`) e tipografia base já integrados.
 - Priorize um design moderno de tema escuro, com transições em hover utilizando Tailwind.
 - **MANDATÓRIO:** Consulte SEMPRE o mapa de classes configurado em `agentes/paleta-cores.md` antes de criar ou modificar `views/` e `components/` no frontend, para não quebrar a coesão padrão das cores.
+
+### Mobile First e Responsividade
+
+- **Mobile First é essencial:** Todo novo componente, tela ou interacao deve ser projetado priorizando a experiencia em dispositivos moveis. O layout deve escalar para cima (desktop) e nao o contrario.
+- **Componentes de Selecao:** Em campos de selecao (dropdowns), prefira no mobile uma interface de popover/modal ao clicar, onde o usuario escolhe a opcao em um painel sobreposto. No desktop, dropdowns padrao ou menus suspensos sao aceitaveis.
 
 ## 6. CONVENÇÕES DE NOMENCLATURA E COMANDOS
 

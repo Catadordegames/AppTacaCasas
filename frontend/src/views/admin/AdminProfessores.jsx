@@ -6,7 +6,7 @@ import toast from 'react-hot-toast'
 import CrudTable from '../../components/ui/CrudTable'
 import Modal from '../../components/ui/Modal'
 
-const FORM_VAZIO = { nome: '', senha: '', permissao: 1, casa_id: '' }
+const FORM_VAZIO = { nome: '', senha: '', permissao: 2, casa_id: '' }
 
 export default function AdminProfessores() {
   const { data: professores, loading, loadingSave: salvando, loadingDelete: deletando, load, save, remove } = useCrud('/professores', 'Professor')
@@ -36,10 +36,10 @@ export default function AdminProfessores() {
     try {
       const payload = { ...form, permissao: Number(form.permissao), casa_id: Number(form.casa_id) }
       if (!payload.senha) delete payload.senha // não envia senha vazia na edição
-      
+
       await save(payload, editando?.id)
       fecharModal()
-    } catch {} // Handled internally
+    } catch { } // Handled internally
   }
 
   const handleDeletar = async (p) => {
@@ -48,13 +48,15 @@ export default function AdminProfessores() {
   }
 
   const columns = [
-    { key: 'nome',      label: 'Nome' },
+    { key: 'nome', label: 'Nome' },
     { key: 'casa_nome', label: 'Casa' },
-    { key: 'permissao', label: 'Perfil', render: (v) => (
-      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${v === 2 ? 'bg-purple-900/60 text-purple-300' : 'bg-background-600 text-gray-400'}`}>
-        {v === 2 ? 'ADMIN' : 'Professor'}
-      </span>
-    )},
+    {
+      key: 'permissao', label: 'Perfil', render: (v) => (
+        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${v === 2 ? 'bg-purple-900/60 text-purple-300' : 'bg-background-600 text-gray-400'}`}>
+          {v === 2 ? 'ADMIN' : 'Professor'}
+        </span>
+      )
+    },
   ]
 
   return (

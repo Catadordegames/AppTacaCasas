@@ -23,6 +23,7 @@ Mobile-first, com suporte a PWA e atualização do placar em tempo real.
 O **Taça das Casas** substitui planilhas e quadros físicos por uma solução digital acessível de qualquer dispositivo.
 
 **Funcionalidades:**
+
 - 📊 Placar público em tempo real (sem login)
 - 🔐 Autenticação JWT com dois níveis: Professor e Admin
 - ➕ Lançamento de pontos com justificativas pré-cadastradas ou personalizadas
@@ -47,6 +48,7 @@ O **Taça das Casas** substitui planilhas e quadros físicos por uma solução d
 ## 🐳 Como Rodar com Docker <a name="docker"></a>
 
 ### Pré-requisitos
+
 - Docker Desktop instalado e rodando
 - Git
 
@@ -68,8 +70,8 @@ Aguarde ~30 segundos para o MariaDB inicializar na primeira vez.
 
 | Serviço  | URL                       |
 |----------|---------------------------|
-| Frontend | http://localhost           |
-| API      | http://localhost:3001/api  |
+| Frontend | <http://localhost>           |
+| API      | <http://localhost:3001/api>  |
 | MariaDB  | localhost:3306             |
 
 ### Credenciais padrão
@@ -80,12 +82,15 @@ Senha:   password
 ```
 
 > ⚠️ **IMPORTANTE:** Troque a senha do admin imediatamente após o primeiro login!
-> 
+>
 > Para gerar um novo hash:
+>
 > ```bash
 > docker exec taca_backend node -e "const b=require('bcryptjs'); console.log(b.hashSync('nova_senha', 10))"
 > ```
+>
 > Depois atualize diretamente no banco:
+>
 > ```sql
 > UPDATE professores SET senha = 'HASH_GERADO' WHERE nome = 'Coordenação';
 > ```
@@ -112,6 +117,7 @@ docker-compose up --build
 ## 💻 Como Rodar sem Docker <a name="sem-docker"></a>
 
 ### Pré-requisitos
+
 - Node.js 20+
 - MariaDB ou MySQL rodando localmente
 
@@ -165,8 +171,8 @@ mysql -u root -p < database/init.sql
 | Perfil                 | `permissao` | Capacidades                                              |
 |------------------------|-------------|----------------------------------------------------------|
 | Público                | —           | Ver placar/ranking (sem login)                           |
-| Professor              | `1`         | Login, lançar pontos, ver/deletar **seus** lançamentos   |
-| Coordenação / Admin    | `2`         | CRUD completo de tudo, deletar qualquer lançamento, exportar CSV, reset anual |
+| Professor              | `2`         | Login, lançar pontos, ver/deletar **seus** lançamentos   |
+| Coordenação / Admin    | `1`         | CRUD completo de tudo, deletar qualquer lançamento, exportar CSV, reset anual |
 
 ---
 
@@ -199,7 +205,7 @@ mysql -u root -p < database/init.sql
 | GET    | `/justificativas`      | Lista justificativas disponíveis           |
 | GET    | `/alunos`              | Lista alunos (filtros: turma_id, casa_id)  |
 
-### 🛡️ Admin (requer token com `permissao: 2`)
+### 🛡️ Admin (requer token com `permissao: 1`)
 
 | Método | Endpoint                    | Descrição                          |
 |--------|-----------------------------|------------------------------------|
@@ -229,6 +235,7 @@ mysql -u root -p < database/init.sql
 ## 📨 Exemplos de Requisição <a name="exemplos"></a>
 
 ### Login
+
 ```http
 POST /api/auth/login
 Content-Type: application/json
@@ -240,13 +247,14 @@ Content-Type: application/json
 ```
 
 **Resposta:**
+
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiIs...",
   "usuario": {
     "id": 1,
     "nome": "Coordenação",
-    "permissao": 2,
+    "permissao": 1,
     "casa_id": 1
   }
 }
@@ -255,6 +263,7 @@ Content-Type: application/json
 ---
 
 ### Lançar Pontos (justificativa padrão)
+
 ```http
 POST /api/lancamentos
 Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
@@ -273,6 +282,7 @@ Content-Type: application/json
 ---
 
 ### Lançar Pontos (justificativa personalizada)
+
 ```http
 POST /api/lancamentos
 Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
@@ -290,11 +300,13 @@ Content-Type: application/json
 ---
 
 ### Ver Placar (público)
+
 ```http
 GET /api/ranking
 ```
 
 **Resposta:**
+
 ```json
 [
   { "id": 1, "nome": "Casa Leão", "brasao": "🦁", "total_pontos": 350, "total_lancamentos": 12 },
@@ -307,6 +319,7 @@ GET /api/ranking
 ---
 
 ### Exportar CSV com filtros
+
 ```http
 GET /api/export/lancamentos?casa_id=1&data_inicio=2025-01-01
 Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
@@ -315,6 +328,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
 ---
 
 ### Reset Anual
+
 ```http
 POST /api/export/reset
 Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
@@ -322,6 +336,7 @@ Content-Type: application/json
 
 { "confirmar": true }
 ```
+
 > Retorna um arquivo `.csv` com backup completo e deleta todos os lançamentos.
 
 ---

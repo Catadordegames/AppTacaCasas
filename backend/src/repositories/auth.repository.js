@@ -35,11 +35,11 @@ const autenticar = (req, res, next) => {
 };
 
 /**
- * Middleware de autorização para admins (permissao = 2).
+ * Middleware de autorização para admins (permissao = 1).
  * SEMPRE use após autenticar().
  */
 const apenasAdmin = (req, res, next) => {
-  if (req.usuario.permissao !== 2) {
+  if (req.usuario.permissao !== 1) {
     return res.status(403).json({ error: 'Acesso restrito à coordenação/diretoria.' });
   }
   next();

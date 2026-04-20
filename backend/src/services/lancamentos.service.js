@@ -15,11 +15,11 @@ const JustificativasRepository = require('../repositories/justificativas.reposit
 const LancamentosService = {
   /**
    * Lista lançamentos.
-   * Professor (permissao=1) vê apenas os seus.
-   * Admin (permissao=2) vê todos.
+   * Professor (permissao=2) vê apenas os seus.
+   * Admin (permissao=1) vê todos.
    */
   async listar(usuario, filtros = {}) {
-    if (usuario.permissao === 1) {
+    if (usuario.permissao === 2) {
       filtros.professor_id = usuario.id;
     }
     return LancamentosRepository.listar(filtros);
@@ -131,7 +131,7 @@ const LancamentosService = {
   async deletar(id, usuario) {
     const lancamento = await this.buscarPorId(id);
 
-    if (usuario.permissao !== 2 && lancamento.professor_id !== usuario.id) {
+    if (usuario.permissao !== 1 && lancamento.professor_id !== usuario.id) {
       const e = new Error('Você não tem permissão para remover este lançamento.');
       e.status = 403; throw e;
     }

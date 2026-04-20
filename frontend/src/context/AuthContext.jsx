@@ -42,8 +42,8 @@ export function AuthProvider({ children }) {
     setUsuario(null)
   }
 
-  const isAdmin = usuario?.permissao === 2
-  const isProfessor = usuario?.permissao === 1 || isAdmin
+  const isAdmin = usuario?.permissao === 1
+  const isProfessor = usuario?.permissao === 2 || isAdmin
 
   return (
     <AuthContext.Provider value={{ usuario, login, logout, isAdmin, isProfessor, loading }}>
