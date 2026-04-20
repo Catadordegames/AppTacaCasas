@@ -21,10 +21,10 @@ import LoadingSpinner from './LoadingSpinner'
  */
 
 const variantMap = {
-    primary: 'bg-gold-500 hover:bg-gold-400 text-dark-900 font-semibold',
-    secondary: 'bg-dark-600 hover:bg-dark-500 text-white border border-dark-500',
+    primary: 'bg-primary-500 hover:bg-primary-400 text-background-900 font-semibold',
+    secondary: 'bg-background-600 hover:bg-background-500 text-white border border-background-500',
     danger: 'bg-red-600 hover:bg-red-500 text-white font-semibold',
-    ghost: 'bg-transparent hover:bg-dark-700 text-gray-400 hover:text-white',
+    ghost: 'bg-transparent hover:bg-background-700 text-gray-400 hover:text-white',
 }
 
 const sizeMap = {
@@ -56,7 +56,7 @@ const Button = forwardRef(function Button(
             className={cn(
                 'inline-flex items-center justify-center gap-2 rounded-lg transition-all',
                 'disabled:opacity-50 disabled:cursor-not-allowed',
-                'focus:outline-none focus:ring-2 focus:ring-gold-500/50',
+                'focus:outline-none focus:ring-2 focus:ring-primary-500/50',
                 variantMap[variant],
                 sizeMap[size],
                 fullWidth && 'w-full',

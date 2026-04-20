@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, Users } from 'lucide-react'
-import api from '../../services/api'
+import { useCrud } from '../../hooks/useCrud'
+import { useFetch } from '../../hooks/useFetch'
 import toast from 'react-hot-toast'
 import CrudTable from '../../components/ui/CrudTable'
 import Modal from '../../components/ui/Modal'
@@ -8,25 +9,14 @@ import Modal from '../../components/ui/Modal'
 const FORM_VAZIO = { nome: '', senha: '', permissao: 1, casa_id: '' }
 
 export default function AdminProfessores() {
-  const [professores, setProfessores] = useState([])
-  const [casas, setCasas] = useState([])
-  const [loading, setLoading] = useState(true)
+  const { data: professores, loading, loadingSave: salvando, loadingDelete: deletando, load, save, remove } = useCrud('/professores', 'Professor')
+  const { data: casas } = useFetch('/casas')
+
   const [modalAberto, setModalAberto] = useState(false)
   const [editando, setEditando] = useState(null)
   const [form, setForm] = useState(FORM_VAZIO)
-  const [salvando, setSalvando] = useState(false)
-  const [deletando, setDeletando] = useState(null)
 
-  const carregar = useCallback(async () => {
-    try {
-      setLoading(true)
-      const [p, c] = await Promise.all([api.get('/professores'), api.get('/casas')])
-      setProfessores(p.data); setCasas(c.data)
-    } catch { toast.error('Erro ao carregar.') }
-    finally { setLoading(false) }
-  }, [])
-
-  useEffect(() => { carregar() }, [carregar])
+  useEffect(() => { load() }, [load])
 
   const abrirCriar = () => {
     setEditando(null)
@@ -44,30 +34,24 @@ export default function AdminProfessores() {
     e.preventDefault()
     if (!editando && !form.senha) { toast.error('Senha é obrigatória na criação.'); return }
     try {
-      setSalvando(true)
       const payload = { ...form, permissao: Number(form.permissao), casa_id: Number(form.casa_id) }
       if (!payload.senha) delete payload.senha // não envia senha vazia na edição
-      if (editando) { await api.put(`/professores/${editando.id}`, payload); toast.success('Professor atualizado!') }
-      else { await api.post('/professores', payload); toast.success('Professor criado!') }
-      fecharModal(); carregar()
-    } catch (err) { toast.error(err.response?.data?.error || 'Erro ao salvar.') }
-    finally { setSalvando(false) }
+      
+      await save(payload, editando?.id)
+      fecharModal()
+    } catch {} // Handled internally
   }
 
   const handleDeletar = async (p) => {
     if (!confirm(`Deletar o professor "${p.nome}"?`)) return
-    try {
-      setDeletando(p.id); await api.delete(`/professores/${p.id}`)
-      toast.success('Professor removido.'); setProfessores((prev) => prev.filter((x) => x.id !== p.id))
-    } catch (err) { toast.error(err.response?.data?.error || 'Erro ao deletar.') }
-    finally { setDeletando(null) }
+    await remove(p.id)
   }
 
   const columns = [
     { key: 'nome',      label: 'Nome' },
     { key: 'casa_nome', label: 'Casa' },
     { key: 'permissao', label: 'Perfil', render: (v) => (
-      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${v === 2 ? 'bg-purple-900/60 text-purple-300' : 'bg-dark-600 text-gray-400'}`}>
+      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${v === 2 ? 'bg-purple-900/60 text-purple-300' : 'bg-background-600 text-gray-400'}`}>
         {v === 2 ? 'ADMIN' : 'Professor'}
       </span>
     )},
@@ -77,7 +61,7 @@ export default function AdminProfessores() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Users size={22} className="text-gold-400" />
+          <Users size={22} className="text-primary-400" />
           <h1 className="text-2xl font-display font-bold text-white">Professores</h1>
         </div>
         <button onClick={abrirCriar} className="btn-primary flex items-center gap-2 text-sm">
@@ -85,7 +69,7 @@ export default function AdminProfessores() {
         </button>
       </div>
 
-      <div className="card border border-dark-600">
+      <div className="card border border-background-600">
         <CrudTable columns={columns} data={professores} loading={loading}
           onEdit={abrirEditar} onDelete={handleDeletar} deletando={deletando}
           searchPlaceholder="Buscar professor..." />

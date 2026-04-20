@@ -8,9 +8,9 @@
 // 4. handleDeletar() — DELETE com confirmação
 // ============================================================
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, Shield } from 'lucide-react'
-import api from '../../services/api'
+import { useCrud } from '../../hooks/useCrud'
 import toast from 'react-hot-toast'
 import CrudTable from '../../components/ui/CrudTable'
 import Modal from '../../components/ui/Modal'
@@ -18,24 +18,13 @@ import Modal from '../../components/ui/Modal'
 const FORM_VAZIO = { nome: '', brasao: '' }
 
 export default function AdminCasas() {
-  const [casas, setCasas] = useState([])
-  const [loading, setLoading] = useState(true)
+  const { data: casas, loading, loadingSave: salvando, loadingDelete: deletando, load, save, remove } = useCrud('/casas', 'Casa')
+
   const [modalAberto, setModalAberto] = useState(false)
-  const [editando, setEditando] = useState(null) // null = criando, objeto = editando
+  const [editando, setEditando] = useState(null)
   const [form, setForm] = useState(FORM_VAZIO)
-  const [salvando, setSalvando] = useState(false)
-  const [deletando, setDeletando] = useState(null)
 
-  const carregar = useCallback(async () => {
-    try {
-      setLoading(true)
-      const { data } = await api.get('/casas')
-      setCasas(data)
-    } catch { toast.error('Erro ao carregar casas.') }
-    finally { setLoading(false) }
-  }, [])
-
-  useEffect(() => { carregar() }, [carregar])
+  useEffect(() => { load() }, [load])
 
   const abrirCriar = () => { setEditando(null); setForm(FORM_VAZIO); setModalAberto(true) }
   const abrirEditar = (casa) => { setEditando(casa); setForm({ nome: casa.nome, brasao: casa.brasao }); setModalAberto(true) }
@@ -45,29 +34,14 @@ export default function AdminCasas() {
     e.preventDefault()
     if (!form.nome.trim() || !form.brasao.trim()) { toast.error('Preencha todos os campos.'); return }
     try {
-      setSalvando(true)
-      if (editando) {
-        await api.put(`/casas/${editando.id}`, form)
-        toast.success('Casa atualizada!')
-      } else {
-        await api.post('/casas', form)
-        toast.success('Casa criada!')
-      }
+      await save(form, editando?.id)
       fecharModal()
-      carregar()
-    } catch (err) { toast.error(err.response?.data?.error || 'Erro ao salvar.') }
-    finally { setSalvando(false) }
+    } catch {} // handled in hook
   }
 
   const handleDeletar = async (casa) => {
     if (!confirm(`Deletar "${casa.nome}"? Esta ação não pode ser desfeita.`)) return
-    try {
-      setDeletando(casa.id)
-      await api.delete(`/casas/${casa.id}`)
-      toast.success('Casa removida.')
-      setCasas((prev) => prev.filter((c) => c.id !== casa.id))
-    } catch (err) { toast.error(err.response?.data?.error || 'Erro ao deletar.') }
-    finally { setDeletando(null) }
+    await remove(casa.id)
   }
 
   const columns = [
@@ -79,7 +53,7 @@ export default function AdminCasas() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Shield size={22} className="text-gold-400" />
+          <Shield size={22} className="text-primary-400" />
           <h1 className="text-2xl font-display font-bold text-white">Casas</h1>
         </div>
         <button onClick={abrirCriar} className="btn-primary flex items-center gap-2 text-sm">
@@ -87,7 +61,7 @@ export default function AdminCasas() {
         </button>
       </div>
 
-      <div className="card border border-dark-600">
+      <div className="card border border-background-600">
         <CrudTable
           columns={columns}
           data={casas}

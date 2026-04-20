@@ -37,8 +37,8 @@ export default function ToggleButton({
                         className={cn(
                             'flex-1 py-2 rounded-lg text-sm font-semibold border transition-all',
                             isSelected
-                                ? 'bg-gold-500/20 border-gold-500/50 text-gold-400'
-                                : 'bg-dark-700 border-dark-500 text-gray-400 hover:border-dark-400'
+                                ? 'bg-primary-500/20 border-primary-500/50 text-primary-400'
+                                : 'bg-background-700 border-background-500 text-gray-400 hover:border-background-400'
                         )}
                     >
                         {opt.label}

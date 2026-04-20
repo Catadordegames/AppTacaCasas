@@ -385,7 +385,7 @@ function formatPontosMessage(pontos) {
 function PageHeader({ title, icon }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="text-gold-400">{icon}</span>
+      <span className="text-primary-400">{icon}</span>
       <h1 className="text-2xl font-display font-bold text-white">{title}</h1>
     </div>
   )
@@ -395,7 +395,7 @@ function LoadingState() {
   return (
     <div className="max-w-lg mx-auto space-y-6">
       <div className="flex items-center gap-3">
-        <PlusCircle size={24} className="text-gold-400" />
+        <PlusCircle size={24} className="text-primary-400" />
         <h1 className="text-2xl font-display font-bold text-white">Lançar Pontos</h1>
       </div>
       <Card>

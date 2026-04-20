@@ -52,7 +52,7 @@ export default function AdminTurmas() {
   const columns = [
     { key: 'nome',  label: 'Nome'  },
     { key: 'turno', label: 'Turno', render: (v) => (
-      <span className="px-2 py-0.5 bg-dark-600 rounded-full text-xs text-gray-300">{v}</span>
+      <span className="px-2 py-0.5 bg-background-600 rounded-full text-xs text-gray-300">{v}</span>
     )},
   ]
 
@@ -60,7 +60,7 @@ export default function AdminTurmas() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <BookOpen size={22} className="text-gold-400" />
+          <BookOpen size={22} className="text-primary-400" />
           <h1 className="text-2xl font-display font-bold text-white">Turmas</h1>
         </div>
         <button onClick={abrirCriar} className="btn-primary flex items-center gap-2 text-sm">
@@ -68,7 +68,7 @@ export default function AdminTurmas() {
         </button>
       </div>
 
-      <div className="card border border-dark-600">
+      <div className="card border border-background-600">
         <CrudTable columns={columns} data={turmas} loading={loading}
           onEdit={abrirEditar} onDelete={handleDeletar} deletando={deletando}
           searchPlaceholder="Buscar turma..." />

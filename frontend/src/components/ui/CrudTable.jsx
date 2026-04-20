@@ -36,7 +36,7 @@ export default function CrudTable({
   if (loading) {
     return (
       <div className="flex justify-center py-12">
-        <div className="w-8 h-8 border-2 border-gold-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -55,10 +55,10 @@ export default function CrudTable({
       </div>
 
       {/* Tabela — scroll horizontal no mobile */}
-      <div className="overflow-x-auto rounded-xl border border-dark-600">
+      <div className="overflow-x-auto rounded-xl border border-background-600">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-dark-700 text-left">
+            <tr className="bg-background-700 text-left">
               {columns.map((col) => (
                 <th key={col.key} className="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">
                   {col.label}
@@ -71,7 +71,7 @@ export default function CrudTable({
               )}
             </tr>
           </thead>
-          <tbody className="divide-y divide-dark-600">
+          <tbody className="divide-y divide-background-600">
             {filtrado.length === 0 ? (
               <tr>
                 <td colSpan={columns.length + 1} className="text-center text-gray-500 py-10">
@@ -80,7 +80,7 @@ export default function CrudTable({
               </tr>
             ) : (
               filtrado.map((row) => (
-                <tr key={row.id} className="bg-dark-800 hover:bg-dark-700 transition-colors">
+                <tr key={row.id} className="bg-background-800 hover:bg-background-700 transition-colors">
                   {columns.map((col) => (
                     <td key={col.key} className="px-4 py-3 text-gray-300">
                       {col.render ? col.render(row[col.key], row) : (row[col.key] ?? '—')}
@@ -92,7 +92,7 @@ export default function CrudTable({
                         {onEdit && (
                           <button
                             onClick={() => onEdit(row)}
-                            className="text-gray-500 hover:text-gold-400 transition-colors p-1"
+                            className="text-gray-500 hover:text-primary-400 transition-colors p-1"
                             title="Editar"
                           >
                             <Pencil size={15} />

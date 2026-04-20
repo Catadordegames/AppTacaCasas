@@ -18,7 +18,7 @@ export default function Card({
     children,
     className,
     border = true,
-    borderClass = 'border-dark-500',
+    borderClass = 'border-background-500',
     ...props
 }) {
     return (

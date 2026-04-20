@@ -55,7 +55,7 @@ export default function Navbar() {
   }, [])
 
   return (
-    <nav className="bg-dark-800 border-b border-dark-600 sticky top-0 z-50">
+    <nav className="bg-background-800 border-b border-background-600 sticky top-0 z-50">
       <div className="container mx-auto px-4 max-w-5xl">
         <div className="flex items-center justify-between h-14">
           {/* Logo */}
@@ -116,7 +116,7 @@ function Logo() {
   return (
     <Link
       to="/"
-      className="flex items-center gap-2 font-display font-bold text-gold-400 text-lg"
+      className="flex items-center gap-2 font-display font-bold text-primary-400 text-lg"
     >
       <Trophy size={22} />
       <span className="hidden sm:inline">Taça das Casas</span>
@@ -150,7 +150,7 @@ function NavLink({ to, children, isActive }) {
     <Link
       to={to}
       className={`pb-0.5 transition-colors ${isActive
-          ? 'text-gold-400 border-b-2 border-gold-400'
+          ? 'text-primary-400 border-b-2 border-primary-400'
           : 'text-gray-400 hover:text-white'
         }`}
     >
@@ -167,14 +167,14 @@ function AdminDropdown() {
         Admin
       </button>
       <div
-        className="absolute right-0 top-full mt-1 w-48 bg-dark-700 border border-dark-500 rounded-xl shadow-xl
+        className="absolute right-0 top-full mt-1 w-48 bg-background-700 border border-background-500 rounded-xl shadow-xl
                    opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50"
       >
         {ADMIN_LINKS.map((item) => (
           <Link
             key={item.to}
             to={item.to}
-            className="block px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-dark-600 
+            className="block px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-background-600 
                        first:rounded-t-xl last:rounded-b-xl transition-colors"
           >
             {item.label}
@@ -207,7 +207,7 @@ function UserBadge({ usuario, isAdmin }) {
       <span
         className={`ml-1.5 px-1.5 py-0.5 rounded text-xs font-bold ${isAdmin
             ? 'bg-purple-900 text-purple-300'
-            : 'bg-dark-600 text-gray-400'
+            : 'bg-background-600 text-gray-400'
           }`}
       >
         {isAdmin ? 'ADMIN' : 'PROF'}
@@ -230,7 +230,7 @@ function MobileMenuButton({ isOpen, onClick }) {
 
 function MobileNav({ usuario, isAdmin, isActive, onLogout, onClose }) {
   return (
-    <div className="md:hidden bg-dark-800 border-t border-dark-600 px-4 pb-4 space-y-1">
+    <div className="md:hidden bg-background-800 border-t border-background-600 px-4 pb-4 space-y-1">
       <MobileLink to="/" label="🏆 Placar" onClick={onClose} />
 
       {usuario && (
@@ -263,7 +263,7 @@ function MobileNav({ usuario, isAdmin, isActive, onLogout, onClose }) {
       {usuario ? (
         <button
           onClick={onLogout}
-          className="w-full text-left px-3 py-2 text-red-400 hover:bg-dark-700 rounded-lg 
+          className="w-full text-left px-3 py-2 text-red-400 hover:bg-background-700 rounded-lg 
                      transition-colors text-sm font-semibold"
         >
           🚪 Sair ({usuario.nome})
@@ -280,7 +280,7 @@ function MobileLink({ to, label, onClick }) {
     <Link
       to={to}
       onClick={onClick}
-      className="block px-3 py-2 text-gray-300 hover:text-white hover:bg-dark-700 
+      className="block px-3 py-2 text-gray-300 hover:text-white hover:bg-background-700 
                  rounded-lg transition-colors text-sm font-semibold"
     >
       {label}
