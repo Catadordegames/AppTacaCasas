@@ -43,11 +43,11 @@ jobs:
 
       - name: 🚀 Transferir arquivos para a VM via Rsync
         uses: easingthemes/ssh-deploy@main
-        env:
+        with:
           SSH_PRIVATE_KEY: ${{ secrets.VM_SSH_KEY }}
           # Aqui é onde excluímos o que NÃO deve ir para o servidor!
           ARGS: "-avz --exclude='.git/' --exclude='README.md' --exclude='node_modules/' --exclude='uploads/'"
-          SOURCE: "./deploy/" 
+          SOURCE: "deploy/" 
           REMOTE_HOST: ${{ secrets.VM_HOST }}
           REMOTE_USER: ${{ secrets.VM_USER }}
           TARGET: "/var/www/tacadascasas" # A pasta onde o projeto fica no servidor
