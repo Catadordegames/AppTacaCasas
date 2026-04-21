@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { useAuth } from '../../context/AuthContext'
-import { isRequired } from '../../utils/validators'
+import { useAuth } from '../context/AuthContext'
+import { isRequired } from '../utils/validators'
 
 export default function useLogin() {
   const { login } = useAuth()

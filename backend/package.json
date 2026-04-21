@@ -2,11 +2,11 @@
   "name": "taca-das-casas-backend",
   "version": "1.0.0",
   "description": "Backend da aplicação Taça das Casas - CEF 102 Norte",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
-    "pm2": "pm2 start ecosystem.config.js"
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "pm2": "pm2 start Ecosystem.config.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

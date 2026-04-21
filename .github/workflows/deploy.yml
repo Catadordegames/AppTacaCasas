@@ -52,29 +52,25 @@ jobs:
           REMOTE_USER: ${{ secrets.VM_USER }}
           TARGET: "/var/www/tacadascasas" # A pasta onde o projeto fica no servidor
 
-      - name: 📝 Criar arquivo .env na VM
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
-          script: |
-            cat > /var/www/tacadascasas/backend/.env << 'EOF'
-            # Database
-            DB_HOST=${{ secrets.DB_HOST }}
-            DB_PORT=${{ secrets.DB_PORT }}
-            DB_USER=${{ secrets.DB_USER }}
-            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            DB_NAME=${{ secrets.DB_NAME }}
-
-            # Backend
-            PORT=${{ secrets.PORT }}
-            NODE_ENV=production
-            JWT_SECRET=${{ secrets.JWT_SECRET }}
-
-            # Frontend (build time)
-            VITE_API_URL=${{ secrets.VITE_API_URL }}
-            EOF
+      # - name: 📝 Criar arquivo .env na VM
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: ${{ secrets.VM_HOST }}
+      #     username: ${{ secrets.VM_USER }}
+      #     key: ${{ secrets.VM_SSH_KEY }}
+      #     script: |
+      #       cat > /var/www/tacadascasas/backend/.env << 'EOF'
+      #       # Database
+      #       DB_HOST=${{ secrets.DB_HOST }}
+      #       DB_PORT=${{ secrets.DB_PORT }}
+      #       DB_USER=${{ secrets.DB_USER }}
+      #       DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+      #       DB_NAME=${{ secrets.DB_NAME }}
+      #       PORT=${{ secrets.PORT }}
+      #       NODE_ENV=production
+      #       JWT_SECRET=${{ secrets.JWT_SECRET }}
+      #       VITE_API_URL=${{ secrets.VITE_API_URL }}
+      #       EOF
 
       - name: 🔄 Atualizar dependências e reiniciar o Back-end
         uses: appleboy/ssh-action@master
@@ -96,5 +92,6 @@ jobs:
             # Instala dependências
             npm install --production
             
-            # Reinicia o Node.js usando o PM2
-            pm2 restart api-node || pm2 start index.js --name "api-node"
+            # Reinicia o Node.js usando o PM2 com o ecossistema correto
+            pm2 start Ecosystem.config.js --env production || pm2 restart taca-das-casas-api
+

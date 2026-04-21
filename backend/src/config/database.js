@@ -17,6 +17,7 @@ const pool = mysql.createPool({
   connectionLimit: 10,      // máximo de conexões simultâneas no pool
   queueLimit: 0,            // 0 = sem limite de fila
   timezone: '-03:00',       // Brasília (UTC-3)
+  multipleStatements: true, // permite executar migrations com vários statements
 });
 
 // Testa a conexão ao inicializar

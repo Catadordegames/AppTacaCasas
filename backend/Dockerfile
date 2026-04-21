@@ -20,4 +20,4 @@ RUN mkdir -p logs
 EXPOSE 3001
 
 # Usa PM2 para rodar a aplicação (mantém processo vivo e reinicia em falhas)
-CMD ["pm2-runtime", "ecosystem.config.js"]
+CMD ["pm2-runtime", "Ecosystem.config.js"]

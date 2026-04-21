@@ -24,6 +24,7 @@ const NAV_LINKS = {
 
 // Links de administração
 const ADMIN_LINKS = [
+  { to: '/cadastro-rapido', label: 'Cadastro Rápido' },
   { to: '/admin/lancamentos', label: 'Lançamentos' },
   { to: '/admin/casas', label: 'Casas' },
   { to: '/admin/turmas', label: 'Turmas' },
@@ -150,8 +151,8 @@ function NavLink({ to, children, isActive }) {
     <Link
       to={to}
       className={`pb-0.5 transition-colors ${isActive
-          ? 'text-primary-400 border-b-2 border-primary-400'
-          : 'text-gray-400 hover:text-white'
+        ? 'text-primary-400 border-b-2 border-primary-400'
+        : 'text-gray-400 hover:text-white'
         }`}
     >
       {children}
@@ -206,8 +207,8 @@ function UserBadge({ usuario, isAdmin }) {
       {usuario.nome}
       <span
         className={`ml-1.5 px-1.5 py-0.5 rounded text-xs font-bold ${isAdmin
-            ? 'bg-purple-900 text-purple-300'
-            : 'bg-background-600 text-gray-400'
+          ? 'bg-purple-900 text-purple-300'
+          : 'bg-background-600 text-gray-400'
           }`}
       >
         {isAdmin ? 'ADMIN' : 'PROF'}

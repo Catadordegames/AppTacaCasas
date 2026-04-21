@@ -17,6 +17,7 @@ const justificativasRoutes = require('./routes/justificativas.routes');
 const lancamentosRoutes = require('./routes/lancamentos.routes');
 const rankingRoutes = require('./routes/ranking.routes');
 const exportRoutes = require('./routes/export.routes');
+const bulkInsertRoutes = require('./routes/bulkInsert.routes');
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use('/api/justificativas', justificativasRoutes);
 app.use('/api/lancamentos', lancamentosRoutes);
 app.use('/api/ranking', rankingRoutes);
 app.use('/api/export', exportRoutes);
+app.use('/api/bulk-insert', bulkInsertRoutes);
 
 // ── Health Check ─────────────────────────────────────────────
 app.get('/api/health', (req, res) => {

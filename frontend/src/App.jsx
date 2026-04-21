@@ -17,6 +17,9 @@ import Login from './views/public/Login'
 // Páginas Professor
 import LancarPontos from './views/professor/LancarPontos'
 
+// Páginas Admin
+import CadastroRapido from './views/admin/CadastroRapido'
+
 // ── Guards de rota ────────────────────────────────────────────
 
 function RotaProtegida({ children }) {
@@ -57,6 +60,9 @@ export default function App() {
 
           {/* Professor + Admin */}
           <Route path="lancar" element={<RotaProtegida><LancarPontos /></RotaProtegida>} />
+
+          {/* Admin apenas */}
+          <Route path="cadastro-rapido" element={<RotaAdmin><CadastroRapido /></RotaAdmin>} />
 
           {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" replace />} />
