@@ -44,9 +44,26 @@ app.use('/api/ranking', rankingRoutes);
 app.use('/api/export', exportRoutes);
 app.use('/api/bulk-insert', bulkInsertRoutes);
 
+const pool = require('./config/database');
+
 // ── Health Check ─────────────────────────────────────────────
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+// Rota útil para Nginx e para o próprio dev checar fisicamente o banco
+app.get(['/', '/api/health'], async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    res.json({ 
+      api: 'online', 
+      database: 'connected ✅', 
+      timestamp: new Date().toISOString() 
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      api: 'online', 
+      database: 'disconnected ❌', 
+      error: error.message,
+      timestamp: new Date().toISOString() 
+    });
+  }
 });
 
 // ── Middleware de Erro Global ─────────────────────────────────
