@@ -78,3 +78,20 @@ export function formatDateTime(date) {
         minute: '2-digit',
     })
 }
+
+/**
+ * Formata um número de telefone com DDD, ex: (99) 99999-9999.
+ * Limita a 11 dígitos numéricos no total (15 caracteres formatados).
+ * @param {string} value - O valor atual do input
+ * @returns {string} - O valor formatado
+ */
+export function formatPhone(value) {
+    if (!value) return '';
+    let numbers = value.replace(/\D/g, '');
+    numbers = numbers.substring(0, 11);
+    if (numbers.length === 0) return '';
+    if (numbers.length <= 2) return `(${numbers}`;
+    if (numbers.length <= 6) return `(${numbers.substring(0, 2)}) ${numbers.substring(2)}`;
+    if (numbers.length <= 10) return `(${numbers.substring(0, 2)}) ${numbers.substring(2, 6)}-${numbers.substring(6)}`;
+    return `(${numbers.substring(0, 2)}) ${numbers.substring(2, 7)}-${numbers.substring(7, 11)}`;
+}

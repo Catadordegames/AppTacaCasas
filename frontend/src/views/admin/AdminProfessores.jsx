@@ -1,6 +1,7 @@
 import { Plus, Users } from 'lucide-react'
 import CrudTable from '../../components/ui/CrudTable'
 import Modal from '../../components/ui/Modal'
+import PasswordRequirements from '../../components/ui/PasswordRequirements'
 import useAdminProfessores from '../../hooks/useAdminProfessores'
 
 export default function AdminProfessores() {
@@ -49,8 +50,14 @@ export default function AdminProfessores() {
                 Senha {editando && <span className="text-gray-500 font-normal">(deixe em branco para manter)</span>}
               </label>
               <input className="input" type="password" placeholder="••••••••" value={form.senha}
+                maxLength={20}
+                autoComplete="off"
+                data-lpignore="true"
+                readOnly
+                onFocus={(e) => e.target.removeAttribute('readonly')}
                 onChange={(e) => setForm({ ...form, senha: e.target.value })}
                 required={!editando} />
+              <PasswordRequirements password={form.senha} />
             </div>
             <div>
               <label className="label">Perfil *</label>

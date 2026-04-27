@@ -18,6 +18,7 @@ const lancamentosRoutes = require('./routes/lancamentos.routes');
 const rankingRoutes = require('./routes/ranking.routes');
 const exportRoutes = require('./routes/export.routes');
 const bulkInsertRoutes = require('./routes/bulkInsert.routes');
+const perfilRoutes = require('./routes/perfil.routes');
 
 const app = express();
 
@@ -43,6 +44,7 @@ app.use('/api/lancamentos', lancamentosRoutes);
 app.use('/api/ranking', rankingRoutes);
 app.use('/api/export', exportRoutes);
 app.use('/api/bulk-insert', bulkInsertRoutes);
+app.use('/api/perfil', perfilRoutes);
 
 const pool = require('./config/database');
 

@@ -6,7 +6,7 @@
 
 import { useState, useMemo, useCallback } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Trophy, Menu, X, LogOut, Shield } from 'lucide-react'
+import { Trophy, Menu, X, LogOut, Shield, User } from 'lucide-react'
 
 import { useAuth } from '../context/AuthContext'
 import { Button } from './ui'
@@ -193,6 +193,13 @@ function DesktopUserActions({ usuario, isAdmin, onLogout }) {
   return (
     <div className="hidden md:flex items-center gap-3">
       <UserBadge usuario={usuario} isAdmin={isAdmin} />
+      <Link
+        to="/perfil"
+        className="text-gray-500 hover:text-primary-400 transition-colors"
+        title="Meu Perfil"
+      >
+        <User size={18} />
+      </Link>
       <button
         onClick={onLogout}
         className="text-gray-500 hover:text-red-400 transition-colors"
@@ -261,13 +268,16 @@ function MobileNav({ usuario, isAdmin, isActive, onLogout, onClose }) {
       )}
 
       {usuario ? (
-        <button
-          onClick={onLogout}
-          className="w-full text-left px-3 py-2 text-red-400 hover:bg-background-700 rounded-lg 
-                     transition-colors text-sm font-semibold"
-        >
-          🚪 Sair ({usuario.nome})
-        </button>
+        <>
+          <MobileLink to="/perfil" label="👤 Meu Perfil" onClick={onClose} />
+          <button
+            onClick={onLogout}
+            className="w-full text-left px-3 py-2 text-red-400 hover:bg-background-700 rounded-lg 
+                       transition-colors text-sm font-semibold"
+          >
+            🚪 Sair ({usuario.nome})
+          </button>
+        </>
       ) : (
         <MobileLink to="/login" label="🔐 Entrar" onClick={onClose} />
       )}

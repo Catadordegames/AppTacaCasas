@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useCrud } from './useCrud'
 import { useFetch } from './useFetch'
 import toast from 'react-hot-toast'
+import { validarSenha } from '../utils/password'
 
 const FORM_VAZIO = { nome: '', senha: '', permissao: 2, casa_id: '' }
 
@@ -22,6 +23,10 @@ export default function useAdminProfessores() {
   const handleSalvar = async (e) => {
     e.preventDefault()
     if (!editando && !form.senha) { toast.error('Senha é obrigatória na criação.'); return }
+    if (form.senha) {
+      const erroSenha = validarSenha(form.senha)
+      if (erroSenha) { toast.error(erroSenha); return }
+    }
     try {
       const payload = { ...form, permissao: Number(form.permissao), casa_id: form.casa_id ? Number(form.casa_id) : null }
       if (!payload.senha) delete payload.senha

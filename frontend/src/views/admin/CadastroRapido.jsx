@@ -11,7 +11,8 @@ import toast from 'react-hot-toast'
 
 import api from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
-import { Button, Input, Select, Card, LoadingSpinner } from '../../components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, Select, PasswordRequirements, LoadingSpinner } from '../../components/ui'
+import { validarSenha } from '../../utils/password'
 
 // ── Configuracao de metadados por tabela ──────────────────────
 
@@ -35,19 +36,19 @@ const CONFIG_TABELAS = {
         icone: School,
         campos: [
             { name: 'nome', label: 'Nome', type: 'text', required: true },
-            { name: 'senha', label: 'Senha Provisoria', type: 'password', required: true },
+            { name: 'senha', label: 'Senha Provisoria', type: 'password', required: true, props: { maxLength: 20, autoComplete: 'off', 'data-lpignore': 'true', preventSuggest: true } },
             {
                 name: 'permissao', label: 'Perfil', type: 'select', options: [
                     { value: '1', label: 'Admin' },
                     { value: '2', label: 'Professor' },
                 ], required: true
             },
-            { name: 'casa_id', label: 'Casa Vinculada', type: 'select', source: '/casas', required: true },
+            { name: 'casa_id', label: 'Casa Vinculada (Opcional)', type: 'select', source: '/casas', required: false },
         ],
         resumo: (item, opcoes) => {
             const casa = opcoes.casas?.find(c => c.id === Number(item.casa_id))?.nome || item.casa_id
             const perfil = item.permissao === '1' ? 'Admin' : 'Professor'
-            return `${item.nome} — ${perfil} — Casa: ${casa}`
+            return `${item.nome} — ${perfil}${casa ? ` — Casa: ${casa}` : ' — Sem Casa'}`
         },
     },
     turmas: {
@@ -141,13 +142,22 @@ export default function CadastroRapido() {
             if (campo.required) {
                 const val = formData[campo.name]
                 if (val === undefined || val === null || val === '') {
-                    toast.error(`Campo "${campo.label}" e obrigatorio.`)
+                    toast.error(`Campo "${campo.label}" é obrigatório.`)
                     return false
                 }
             }
         }
+        
+        if (tabelaAtiva === 'professores' && formData.senha) {
+            const erroSenha = validarSenha(formData.senha)
+            if (erroSenha) {
+                toast.error(erroSenha)
+                return false
+            }
+        }
+
         return true
-    }, [config, formData])
+    }, [config, formData, tabelaAtiva])
 
     const handleAdicionar = useCallback(() => {
         if (!validarForm()) return
@@ -158,8 +168,16 @@ export default function CadastroRapido() {
         }
 
         setRascunho(prev => [...prev, novoItem])
-        // Preserva o turno para facilitar cadastro sequencial de turmas
-        setFormData(tabelaAtiva === 'turmas' ? { turno: formData.turno } : {})
+        // Preserva campos para facilitar cadastro sequencial
+        if (tabelaAtiva === 'turmas') {
+            setFormData({ turno: formData.turno })
+        } else if (tabelaAtiva === 'alunos') {
+            setFormData({ turma_id: formData.turma_id })
+        } else if (tabelaAtiva === 'professores') {
+            setFormData({ permissao: formData.permissao })
+        } else {
+            setFormData({})
+        }
         toast.success('Item adicionado a lista.')
     }, [validarForm, formData, tabelaAtiva])
 
@@ -250,14 +268,17 @@ export default function CadastroRapido() {
         }
 
         return (
-            <Input
-                key={name}
-                label={label}
-                type={type}
-                required={required}
-                value={valor}
-                onChange={(e) => handleChange(name, e.target.value)}
-            />
+            <div key={name} className="flex flex-col">
+                <Input
+                    label={label}
+                    type={type}
+                    required={required}
+                    value={valor}
+                    onChange={(e) => handleChange(name, e.target.value)}
+                    {...(campo.props || {})}
+                />
+                {name === 'senha' && <PasswordRequirements password={valor} />}
+            </div>
         )
     }
 

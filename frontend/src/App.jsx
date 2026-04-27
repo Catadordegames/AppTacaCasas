@@ -18,6 +18,7 @@ import Login from './views/public/Login'
 // Páginas Professor
 import LancarPontos from './views/professor/LancarPontos'
 import ListagemLancamentos from './views/professor/ListagemLancamentos'
+import Perfil from './views/Perfil'
 
 // Páginas Admin
 import CadastroRapido from './views/admin/CadastroRapido'
@@ -75,6 +76,7 @@ export default function App() {
           <Route path="lancamentos" element={<RotaProtegida><ListagemLancamentos /></RotaProtegida>} />
 
           {/* Professor + Admin */}
+          <Route path="perfil" element={<RotaProtegida><Perfil /></RotaProtegida>} />
           <Route path="lancar" element={<RotaProtegida><LancarPontos /></RotaProtegida>} />
 
           {/* Admin apenas */}
