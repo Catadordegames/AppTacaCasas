@@ -5,6 +5,13 @@ const ProfessoresController = {
     try { res.json(await ProfessoresService.listar()); } catch (e) { next(e); }
   },
 
+  async listarNomes(req, res, next) {
+    try {
+      const lista = await ProfessoresService.listar();
+      res.json(lista.map((p) => ({ id: p.id, nome: p.nome })));
+    } catch (e) { next(e); }
+  },
+
   async buscarPorId(req, res, next) {
     try { res.json(await ProfessoresService.buscarPorId(req.params.id)); } catch (e) { next(e); }
   },

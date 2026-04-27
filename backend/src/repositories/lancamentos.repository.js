@@ -41,6 +41,10 @@ const LancamentosRepository = {
       query += ' AND l.data_lancamento <= ?';
       params.push(filtros.data_fim);
     }
+    if (typeof filtros.is_custom === 'boolean') {
+      query += ' AND l.is_custom = ?';
+      params.push(filtros.is_custom ? 1 : 0);
+    }
 
     query += ' ORDER BY l.data_lancamento DESC';
     const [rows] = await db.query(query, params);

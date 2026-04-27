@@ -1,12 +1,14 @@
 // ============================================================
 // views/public/Dashboard.jsx
-// Página pública do placar — o coração do sistema.
-// Acessível sem login para alunos, pais e toda a comunidade.
+// Pagina publica do placar — o coracao do sistema.
+// Acessivel sem login para alunos, pais e toda a comunidade.
+// Pontuacao oculta por padrao; usuario logado pode revelar via botao olho.
 // ============================================================
 
-import { useMemo } from 'react'
-import { Trophy, RefreshCw } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { Trophy, RefreshCw, Eye, EyeOff } from 'lucide-react'
 import { useRanking } from '../../hooks/useRanking'
+import { useAuth } from '../../context/AuthContext'
 
 import { Card, LoadingSpinner, Button } from '../../components/ui'
 import { formatNumber } from '../../utils/formatters'
@@ -21,20 +23,36 @@ const MEDAL_COLORS = [
 
 export default function Dashboard() {
   const { ranking, loading, lastUpdate, carregarRanking } = useRanking(30000)
+  const { usuario } = useAuth()
+  const [mostrarPontos, setMostrarPontos] = useState(false)
 
   const maxPontos = useMemo(() => ranking[0]?.total_pontos || 1, [ranking])
 
+  const togglePontos = () => setMostrarPontos((v) => !v)
+
   return (
     <div className="space-y-6">
-      <DashboardHeader lastUpdate={lastUpdate} />
+      <Card className="space-y-2 pb-4">
+        <DashboardHeader lastUpdate={lastUpdate} />
 
-      <div className="flex justify-end">
-        <RefreshButton onClick={carregarRanking} loading={loading} />
-      </div>
+        <div className="flex justify-between items-center pt-3 border-t border-background-600/30">
+          {usuario && (
+            <button
+              onClick={togglePontos}
+              className="flex items-center gap-2 text-sm text-primary-400 hover:text-primary-500 transition-colors"
+              title={mostrarPontos ? 'Ocultar pontuacao' : 'Mostrar pontuacao'}
+            >
+              {mostrarPontos ? <EyeOff size={18} /> : <Eye size={18} />}
+              {mostrarPontos ? 'Ocultar pontos' : 'Ver pontos'}
+            </button>
+          )}
+          <RefreshButton onClick={carregarRanking} loading={loading} />
+        </div>
+      </Card>
 
       {loading && ranking.length === 0 && <LoadingState />}
 
-      <RankingList ranking={ranking} maxPontos={maxPontos} />
+      <RankingList ranking={ranking} maxPontos={maxPontos} usuario={usuario} mostrarPontos={mostrarPontos} />
 
       {!loading && ranking.length === 0 && <EmptyState />}
     </div>
@@ -58,7 +76,7 @@ function DashboardHeader({ lastUpdate }) {
       <p className="text-gray-400 text-sm">CEF 102 Norte · Placar em tempo real</p>
       {lastUpdate && (
         <p className="text-gray-600 text-xs">
-          Atualizado às {lastUpdate.toLocaleTimeString('pt-BR')}
+          Atualizado as {lastUpdate.toLocaleTimeString('pt-BR')}
         </p>
       )}
     </div>
@@ -70,7 +88,7 @@ function RefreshButton({ onClick, loading }) {
     <button
       onClick={onClick}
       disabled={loading}
-      className="flex items-center gap-2 text-sm text-gray-500 hover:text-primary-400 transition-colors"
+      className="flex items-center gap-2 text-sm text-gray-500 hover:text-primary-400 transition-colors ml-auto"
     >
       <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
       Atualizar
@@ -86,7 +104,7 @@ function LoadingState() {
   )
 }
 
-function RankingList({ ranking, maxPontos }) {
+function RankingList({ ranking, maxPontos, usuario, mostrarPontos }) {
   return (
     <div className="space-y-3">
       {ranking.map((casa, index) => (
@@ -95,18 +113,20 @@ function RankingList({ ranking, maxPontos }) {
           casa={casa}
           index={index}
           maxPontos={maxPontos}
+          usuario={usuario}
+          mostrarPontos={mostrarPontos}
         />
       ))}
     </div>
   )
 }
 
-function RankingItem({ casa, index, maxPontos }) {
+function RankingItem({ casa, index, maxPontos, usuario, mostrarPontos }) {
   const style = MEDAL_COLORS[index] || {
     bg: 'bg-background-700/50',
     border: 'border-background-600',
     text: 'text-gray-500',
-    medal: `${index + 1}º`,
+    medal: `${index + 1}\u00BA`,
     bar: 'bg-background-500',
   }
 
@@ -122,39 +142,37 @@ function RankingItem({ casa, index, maxPontos }) {
       borderClass={style.border}
     >
       <div className="flex items-center gap-4">
-        {/* Posição / medalha */}
+        {/* Posicao / medalha */}
         <MedalBadge index={index} style={style} />
 
-        {/* Brasão + Nome */}
+        {/* Brasao + Nome */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <span className="text-3xl leading-none">{casa.brasao}</span>
           <div className="flex-1 min-w-0">
             <h2 className="font-display font-bold text-white text-lg leading-tight truncate">
               {casa.nome}
             </h2>
-            <p className="text-xs text-gray-500">
-              {casa.total_lancamentos} lançamento{casa.total_lancamentos !== 1 ? 's' : ''}
-            </p>
           </div>
         </div>
 
-        {/* Pontuação */}
-        <div className="text-right flex-shrink-0">
-          <div className={cn('font-display font-bold text-2xl', style.text)}>
-            {formatNumber(casa.total_pontos)}
+        {/* Pontuacao */}
+        {usuario && (
+          <div className="text-right flex-shrink-0">
+            <div className={cn('font-display font-bold text-2xl', style.text)}>
+              {mostrarPontos ? formatNumber(casa.total_pontos) : '***'}
+            </div>
+            <div className="text-xs text-gray-500">pontos</div>
           </div>
-          <div className="text-xs text-gray-500">pontos</div>
-        </div>
+        )}
       </div>
 
-      {/* Barra de progresso */}
-      <ProgressBar width={barWidth} color={style.bar} />
+      {/* Barra de progresso — removida para nao revelar distancia entre casas */}
     </Card>
   )
 }
 
 function MedalBadge({ index, style }) {
-  const isNumeric = typeof style.medal === 'string' && style.medal.includes('º')
+  const isNumeric = typeof style.medal === 'string' && style.medal.includes('o')
 
   return (
     <div className="text-2xl w-10 text-center flex-shrink-0">
@@ -184,8 +202,8 @@ function EmptyState() {
   return (
     <Card className="text-center py-12 text-gray-500">
       <Trophy size={40} className="mx-auto mb-3 opacity-30" />
-      <p>Nenhum dado de pontuação ainda.</p>
-      <p className="text-sm mt-1">Os lançamentos aparecerão aqui em tempo real.</p>
+      <p>Nenhum dado de pontuacao ainda.</p>
+      <p className="text-sm mt-1">Os lancamentos aparecerao aqui em tempo real.</p>
     </Card>
   )
 }

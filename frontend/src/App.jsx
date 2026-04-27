@@ -6,6 +6,7 @@
 
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { useEffect } from 'react'
 
 // Layout
 import Layout from './components/layout/Layout'
@@ -16,6 +17,7 @@ import Login from './views/public/Login'
 
 // Páginas Professor
 import LancarPontos from './views/professor/LancarPontos'
+import ListagemLancamentos from './views/professor/ListagemLancamentos'
 
 // Páginas Admin
 import CadastroRapido from './views/admin/CadastroRapido'
@@ -47,6 +49,12 @@ function RotaPublica({ children }) {
 // ── Componente principal ──────────────────────────────────────
 
 export default function App() {
+  useEffect(() => {
+    if (localStorage.getItem('theme') !== 'dark') {
+      document.body.classList.add('theme-light')
+    }
+  }, [])
+
   return (
     <AuthProvider>
       <Routes>
@@ -57,6 +65,9 @@ export default function App() {
         <Route path="/" element={<Layout />}>
           {/* Página inicial - Dashboard público */}
           <Route index element={<Dashboard />} />
+
+          {/* Públicas */}
+          <Route path="lancamentos" element={<RotaProtegida><ListagemLancamentos /></RotaProtegida>} />
 
           {/* Professor + Admin */}
           <Route path="lancar" element={<RotaProtegida><LancarPontos /></RotaProtegida>} />

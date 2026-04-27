@@ -152,20 +152,20 @@ export default function LancarPontos() {
 
 function PageHeader({ title, icon }) {
   return (
-    <div className="flex items-center gap-3">
+    <Card className="px-4 py-3 flex items-center gap-3 border-background-600">
       <span className="text-primary-400">{icon}</span>
       <h1 className="text-2xl font-display font-bold text-white">{title}</h1>
-    </div>
+    </Card>
   )
 }
 
 function LoadingState() {
   return (
     <div className="max-w-lg mx-auto space-y-6">
-      <div className="flex items-center gap-3">
+      <Card className="px-4 py-3 flex items-center gap-3 border-background-600">
         <PlusCircle size={24} className="text-primary-400" />
         <h1 className="text-2xl font-display font-bold text-white">Lançar Pontos</h1>
-      </div>
+      </Card>
       <Card>
         <CardContent className="py-8 text-center">
           <p className="text-gray-500">Carregando...</p>

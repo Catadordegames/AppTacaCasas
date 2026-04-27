@@ -5,6 +5,7 @@ const { autenticar, apenasAdmin } = require('../middlewares/auth.middleware');
 
 // Apenas admins gerenciam professores
 router.get('/', autenticar, apenasAdmin, ProfessoresController.listar);
+router.get('/nomes', autenticar, ProfessoresController.listarNomes);
 router.get('/:id', autenticar, apenasAdmin, ProfessoresController.buscarPorId);
 router.post('/', autenticar, apenasAdmin, ProfessoresController.criar);
 router.put('/:id', autenticar, apenasAdmin, ProfessoresController.atualizar);

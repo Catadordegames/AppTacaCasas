@@ -10,6 +10,7 @@ import { Trophy, Menu, X, LogOut, Shield } from 'lucide-react'
 
 import { useAuth } from '../context/AuthContext'
 import { Button } from './ui'
+import ThemeToggle from './ThemeToggle'
 
 // Links de navegação
 const NAV_LINKS = {
@@ -18,7 +19,7 @@ const NAV_LINKS = {
   ],
   professor: [
     { to: '/lancar', label: 'Lançar Pontos' },
-    { to: '/meus-lancamentos', label: 'Meus Lançamentos' },
+    { to: '/lancamentos', label: 'Lançamentos' },
   ],
 }
 
@@ -88,6 +89,9 @@ export default function Navbar() {
                 Entrar
               </Button>
             )}
+
+            {/* Alternador de Tema */}
+            <ThemeToggle />
 
             {/* Botão menu mobile */}
             <MobileMenuButton isOpen={menuAberto} onClick={toggleMenu} />
@@ -237,11 +241,7 @@ function MobileNav({ usuario, isAdmin, isActive, onLogout, onClose }) {
       {usuario && (
         <>
           <MobileLink to="/lancar" label="➕ Lançar Pontos" onClick={onClose} />
-          <MobileLink
-            to="/meus-lancamentos"
-            label="📋 Meus Lançamentos"
-            onClick={onClose}
-          />
+          <MobileLink to="/lancamentos" label="📋 Lançamentos" onClick={onClose} />
         </>
       )}
 

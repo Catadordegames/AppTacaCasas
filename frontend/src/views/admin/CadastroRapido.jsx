@@ -266,10 +266,10 @@ export default function CadastroRapido() {
     return (
         <div className="space-y-6 max-w-3xl mx-auto">
             {/* Header */}
-            <div className="flex items-center gap-3">
+            <Card className="px-4 py-3 flex items-center gap-3 border-background-600">
                 <Plus size={24} className="text-primary-400" />
                 <h1 className="text-2xl font-display font-bold text-white">Cadastro Rápido</h1>
-            </div>
+            </Card>
 
             {/* Seletor de tabela */}
             <Card>

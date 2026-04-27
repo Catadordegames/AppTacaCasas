@@ -212,6 +212,7 @@ function buildPayload(form) {
     turma_id: form.turma_id ? Number(form.turma_id) : undefined,
     aluno_id: form.aluno_id ? Number(form.aluno_id) : undefined,
     justificativa_id: form.justificativa_id ? Number(form.justificativa_id) : undefined,
+    is_custom: form.is_custom,
     pontuacao: form.is_custom ? Number(form.pontuacao) : undefined,
     turno: form.turno || undefined,
     custom_justificativa: form.is_custom ? form.custom_justificativa : undefined,

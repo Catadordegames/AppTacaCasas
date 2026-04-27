@@ -18,7 +18,7 @@ export default function MeusLancamentos() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="card px-4 py-3 border border-background-600 flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <List size={24} className="text-primary-400" />
           <h1 className="text-2xl font-display font-bold text-white">Meus Lançamentos</h1>

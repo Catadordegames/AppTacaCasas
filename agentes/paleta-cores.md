@@ -54,6 +54,20 @@ Essa paleta adotou o aspecto "Azul Meia-Noite" para não pesar tanto o ambiente 
 
 ---
 
+## 🌞 Tema Claro (Mosaico Geométrico)
+
+O tema claro utiliza os valores do mosaico (tiles) de `docs/tiles cores.md` com as seguintes cores aplicadas:
+
+- **Fundo Principal:** Mosaico utilizando a imagem `mosaico_geometrico_tille.png`.
+- **Superfícies (Branco):** `#fdfefe` sólido para cartões e barras. Optamos por remover a transparência e usar fundo sólido para garantir total legibilidade sobre o mosaico colorido.
+- **Ações Primárias (Amarelo):** `#fdcb14`, com interações *hover* em Laranja (`#f75e2d`).
+- **Bordas e Formulários (Cinza Neutro):** Bordas de cartões e inputs utilizam tons cinzas de alto contraste (`#94a3b8` e `#64748b`) para delimitar claramente as áreas dos componentes de formulário e de leitura, substituindo os cinzas claros anteriores. O foco dos formulários usa Laranja (`#f75e2d`).
+- **Textos de Destaque / Títulos (Roxo Escuro):** `#662c72` (um meio-termo entre o roxo vibrante original do mosaico e o preto) para o logo e títulos primários, garantindo contraste vibrante e legível.
+- **Perigo e Alertas (Vermelho):** `#ed383b`.
+- **Textos Principais (Preto/Chumbo):** Cores bem escuras (`#0f172a` e `#475569`) para todos os textos, maximizando a leitura.
+
+---
+
 ## 🔴 Outras Cores Mapeadas no CSS (Tailwind nativas)
 
 - **Vermelho (`red-600` / `red-700`)**

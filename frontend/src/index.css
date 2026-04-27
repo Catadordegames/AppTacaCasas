@@ -86,3 +86,80 @@
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ── Tema Claro (Light Theme) ── */
+body.theme-light {
+  color: #1e293b;
+  background-color: #fdfefe;
+  background-image: url('./assets/mosaico_geometrico_tille.png');
+  background-repeat: repeat;
+  background-attachment: fixed;
+  background-size: auto;
+}
+
+body.theme-light .bg-background-900 { background-color: transparent !important; }
+body.theme-light .bg-background-800 { 
+  background-color: #fdfefe !important; 
+  border-bottom: 1px solid #94a3b8 !important; 
+}
+body.theme-light .bg-background-700 { background-color: #f8fafc !important; border: 1px solid #94a3b8 !important; }
+body.theme-light .bg-background-600 { background-color: #f1f5f9 !important; color: #0f172a !important; }
+
+body.theme-light .border-background-700 { border-color: #94a3b8 !important; }
+body.theme-light .border-background-600 { border-color: #94a3b8 !important; }
+body.theme-light .border-background-500 { border-color: #64748b !important; }
+
+body.theme-light .text-white { color: #0f172a !important; } /* Preto/Slate-900 para textos principais */
+body.theme-light .text-gray-300 { color: #475569 !important; } /* Slate-600 escuro para labels */
+body.theme-light .text-gray-400 { color: #64748b !important; } /* Slate-500 médio para textos inativos */
+body.theme-light .text-primary-400 { color: #662c72 !important; } /* Roxo médio/escuro para títulos/destaques */
+body.theme-light .text-primary-500 { color: #662c72 !important; }
+
+body.theme-light .card {
+  background-color: #fdfefe !important; 
+  border: 1px solid #94a3b8 !important; /* Borda cinza visível (slate-400) */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.theme-light .input {
+  background-color: #fdfefe !important;
+  border: 1px solid #64748b !important; /* Cinza forte para a borda do form (slate-500) */
+  color: #0f172a !important;
+}
+body.theme-light .input:focus {
+  border-color: #f75e2d !important; /* Laranja para foco, não azul */
+  box-shadow: 0 0 0 1px #f75e2d !important;
+}
+
+body.theme-light .btn-primary {
+  background-color: #fdcb14 !important; /* Amarelo/Gold */
+  color: #0f172a !important;
+}
+body.theme-light .btn-primary:hover {
+  background-color: #f75e2d !important; /* Laranja/Orange */
+  color: #fdfefe !important;
+}
+
+body.theme-light .btn-secondary {
+  background-color: #fdfefe !important;
+  color: #475569 !important;
+  border: 1px solid #64748b !important;
+}
+body.theme-light .btn-secondary:hover {
+  background-color: #f1f5f9 !important; 
+  color: #0f172a !important;
+  border-color: #94a3b8 !important;
+}
+
+body.theme-light .btn-danger {
+  background-color: #ed383b !important; /* Vermelho */
+  color: #fdfefe !important;
+}
+body.theme-light .btn-danger:hover {
+  background-color: #f75e2d !important; /* Laranja no hover */
+}
+
+/* Scrollbar */
+body.theme-light::-webkit-scrollbar-track { background: #fdfefe; }
+body.theme-light::-webkit-scrollbar-thumb { background: #cbd5e1; }
+body.theme-light::-webkit-scrollbar-thumb:hover { background: #94a3b8; }

@@ -8,7 +8,13 @@ const LancamentosController = {
         turma_id: req.query.turma_id,
         data_inicio: req.query.data_inicio,
         data_fim: req.query.data_fim,
+        professor_id: req.query.professor_id,
       };
+      // Filtro de justificativa customizada: aceita "true", "false" ou omitido
+      const isCustom = req.query.is_custom;
+      if (isCustom === 'true') filtros.is_custom = true;
+      else if (isCustom === 'false') filtros.is_custom = false;
+
       res.json(await LancamentosService.listar(req.usuario, filtros));
     } catch (e) { next(e); }
   },
