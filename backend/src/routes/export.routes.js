@@ -2,6 +2,7 @@
 // routes/export.routes.js
 // Exportação CSV e Reset Anual.
 // Apenas admins têm acesso.
+// Atualizado para usar a Esteira Única de Exportação e Validação.
 // ============================================================
 
 const express = require('express');
@@ -9,27 +10,20 @@ const router = express.Router();
 const db = require('../config/database');
 const LancamentosRepository = require('../repositories/lancamentos.repository');
 const { autenticar, apenasAdmin } = require('../middlewares/auth.middleware');
+const { gerarSalvarEValidarCSV } = require('../services/exports.service');
 
 /**
- * Converte array de objetos para string CSV.
+ * Função utilitária para enviar o CSV validado de volta ao cliente.
  */
-function toCSV(rows) {
-  if (!rows.length) return '';
-  const headers = Object.keys(rows[0]).join(',');
-  const lines = rows.map((row) =>
-    Object.values(row)
-      .map((v) => {
-        if (v === null || v === undefined) return '';
-        const str = String(v);
-        // Envolve em aspas se contiver vírgula, aspas ou quebra de linha
-        return str.includes(',') || str.includes('"') || str.includes('\n')
-          ? `"${str.replace(/"/g, '""')}"`
-          : str;
-      })
-      .join(',')
-  );
-  return [headers, ...lines].join('\n');
-}
+const enviarCSV = (res, result, filename) => {
+  if (result.success && result.csvString) {
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(result.csvString); 
+  } else {
+    res.status(500).json({ error: 'Falha ao gerar ou validar o arquivo CSV.' });
+  }
+};
 
 /**
  * GET /api/export/lancamentos
@@ -51,12 +45,16 @@ router.get('/lancamentos', autenticar, apenasAdmin, async (req, res, next) => {
 
     const [rows] = await db.query(query, params);
 
-    const csv = toCSV(rows);
-    const filename = `lancamentos_${new Date().toISOString().split('T')[0]}.csv`;
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Nenhum lançamento encontrado para exportar.' });
+    }
 
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    res.send('\uFEFF' + csv); // BOM para Excel reconhecer UTF-8
+    const filename = `lancamentos_${new Date().toISOString().split('T')[0]}.csv`;
+    
+    // Passa pela esteira única (Geração -> Salvamento Fisico -> Validação Booleana)
+    const result = await gerarSalvarEValidarCSV(rows, filename);
+    
+    enviarCSV(res, result, filename);
   } catch (err) {
     next(err);
   }
@@ -79,10 +77,14 @@ router.get('/ranking', autenticar, apenasAdmin, async (req, res, next) => {
       ORDER BY total_pontos DESC
     `);
 
-    const csv = toCSV(rows);
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', 'attachment; filename="ranking.csv"');
-    res.send('\uFEFF' + csv);
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Nenhum ranking disponível.' });
+    }
+
+    const filename = 'ranking.csv';
+    const result = await gerarSalvarEValidarCSV(rows, filename);
+
+    enviarCSV(res, result, filename);
   } catch (err) {
     next(err);
   }
@@ -102,18 +104,31 @@ router.post('/reset', autenticar, apenasAdmin, async (req, res, next) => {
       });
     }
 
-    // Gera o CSV antes de deletar (retorna no response)
     const [rows] = await db.query('SELECT * FROM lancamentos ORDER BY data_lancamento DESC');
-    const csv = toCSV(rows);
+    
+    if (rows.length === 0) {
+      return res.status(400).json({ error: 'Não há lançamentos para resetar.' });
+    }
 
+    const filename = `backup_reset_${new Date().toISOString().split('T')[0]}.csv`;
+    
+    // O caso "Crucial": Gera, Salva e Valida
+    const result = await gerarSalvarEValidarCSV(rows, filename);
+
+    // Usa a trava booleana (validação)
+    if (!result.success) {
+      // Se deu falha ao salvar o backup fisicamente, ABORTA o reset
+      return res.status(500).json({ 
+        error: 'Falha de integridade ao criar arquivo de backup. Operação de Reset Cancelada.' 
+      });
+    }
+
+    // Se chegou aqui, o backup está salvo e validado com sucesso!
     // Deleta todos os lançamentos
     await LancamentosRepository.deletarTodos();
 
-    const filename = `backup_reset_${new Date().toISOString().split('T')[0]}.csv`;
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.setHeader('X-Reset-Count', rows.length);
-    res.send('\uFEFF' + csv);
+    enviarCSV(res, result, filename);
   } catch (err) {
     next(err);
   }

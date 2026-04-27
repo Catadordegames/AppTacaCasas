@@ -31,6 +31,7 @@ jobs:
           # Cria pasta de deploy com apenas o necessário
           mkdir -p deploy/frontend/dist
           mkdir -p deploy/backend
+          mkdir -p deploy/backend/storage/exports
           
           # Copia o build do frontend
           cp -r frontend/dist/* deploy/frontend/dist/
