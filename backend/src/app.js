@@ -70,6 +70,14 @@ app.get(['/', '/api/health'], async (req, res) => {
 // Captura erros não tratados e retorna resposta padronizada
 app.use((err, req, res, next) => {
   console.error('Erro não tratado:', err);
+
+  // Captura erros de foreign key do MariaDB (ex: tentar apagar algo que é FK em outra tabela)
+  if (err.code === 'ER_ROW_IS_REFERENCED_2') {
+    return res.status(400).json({ 
+      error: 'Não é possível excluir este item pois outros objetos dependem dele.' 
+    });
+  }
+
   res.status(err.status || 500).json({
     error: err.message || 'Erro interno do servidor',
   });

@@ -111,3 +111,12 @@ npm run dev
 > 1. Observe e preserve o schema `database/init.sql` ou repasses de `routes/`. Toda alteração deve constar nas exportações do controller.
 > 2. Documente as mudanças na estrutura referenciada em `docs/ESTRUTURA.md` se tiver criado ou movido pastas, e obrigatoriamente **rode o script** `node scripts/gerar-estrutura-arquivos-linhas.js` para atualizar o `docs/ESTRUTURA-LINHAS.md`.
 > 3. Feche o log com as diretrizes do diário requeridos no arquivo de REGRAS central.
+
+## 8. REGRAS DE BANCO DE DADOS E MIGRATIONS
+
+- **Localização de Migrations:** Todo script de evolução de schema ou carga de dados (seeds/mocks) deve ser colocado **exclusivamente** na pasta `backend/migrations/` e nomeado de forma sequencial (ex: `003_add_campo.sql`). O sistema Node executará esses scripts automaticamente na ordem.
+- **A pasta raiz `sql/`:** Contém apenas o `init.sql` inicial (usado exclusivamente no primeiro boot do MariaDB pelo Docker). NUNCA insira novas migrations de evolução na pasta raiz `sql/`.
+- **Prevenção de Falhas de Constraints (Foreign Keys):** Ao inserir dados (`INSERT`) que dependem de chaves de outras tabelas (como associar um lançamento a um aluno), **NUNCA confie em IDs numéricos fixos (Hardcoded)**, pois a contagem dos Auto-Increments se perde ou é consumida parcialmente se o container falhar.
+- **Subqueries Dinâmicas:** Sempre utilize Subqueries baseadas em colunas únicas (como o `nome`) para garantir que o ID correto seja atribuído.
+  - ❌ *Incorreto:* `INSERT INTO lancamentos (aluno_id) VALUES (2);`
+  - ✅ *Correto:* `INSERT INTO lancamentos (aluno_id) VALUES ((SELECT id FROM alunos WHERE nome = 'João' LIMIT 1));`

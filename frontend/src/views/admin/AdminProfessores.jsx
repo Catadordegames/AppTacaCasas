@@ -1,55 +1,14 @@
-import { useState, useEffect } from 'react'
 import { Plus, Users } from 'lucide-react'
-import { useCrud } from '../../hooks/useCrud'
-import { useFetch } from '../../hooks/useFetch'
-import toast from 'react-hot-toast'
 import CrudTable from '../../components/ui/CrudTable'
 import Modal from '../../components/ui/Modal'
-
-const FORM_VAZIO = { nome: '', senha: '', permissao: 2, casa_id: '' }
+import useAdminProfessores from '../../hooks/useAdminProfessores'
 
 export default function AdminProfessores() {
-  const { data: professores, loading, loadingSave: salvando, loadingDelete: deletando, load, save, remove } = useCrud('/professores', 'Professor')
-  const { data: casas } = useFetch('/casas')
-
-  const [modalAberto, setModalAberto] = useState(false)
-  const [editando, setEditando] = useState(null)
-  const [form, setForm] = useState(FORM_VAZIO)
-
-  useEffect(() => { load() }, [load])
-
-  const abrirCriar = () => {
-    setEditando(null)
-    setForm({ ...FORM_VAZIO, casa_id: casas[0]?.id || '' })
-    setModalAberto(true)
-  }
-  const abrirEditar = (p) => {
-    setEditando(p)
-    setForm({ nome: p.nome, senha: '', permissao: p.permissao, casa_id: p.casa_id })
-    setModalAberto(true)
-  }
-  const fecharModal = () => { setModalAberto(false); setEditando(null) }
-
-  const handleSalvar = async (e) => {
-    e.preventDefault()
-    if (!editando && !form.senha) { toast.error('Senha é obrigatória na criação.'); return }
-    try {
-      const payload = { ...form, permissao: Number(form.permissao), casa_id: Number(form.casa_id) }
-      if (!payload.senha) delete payload.senha // não envia senha vazia na edição
-
-      await save(payload, editando?.id)
-      fecharModal()
-    } catch { } // Handled internally
-  }
-
-  const handleDeletar = async (p) => {
-    if (!confirm(`Deletar o professor "${p.nome}"?`)) return
-    await remove(p.id)
-  }
+  const { professores, casas, loading, salvando, deletando, modalAberto, editando, form, setForm, abrirCriar, abrirEditar, fecharModal, handleSalvar, handleDeletar } = useAdminProfessores()
 
   const columns = [
     { key: 'nome', label: 'Nome' },
-    { key: 'casa_nome', label: 'Casa' },
+    { key: 'casa_nome', label: 'Casa', render: (v) => v || <span className="text-gray-500 italic">Sem Casa</span> },
     {
       key: 'permissao', label: 'Perfil', render: (v) => (
         <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${v === 2 ? 'bg-purple-900/60 text-purple-300' : 'bg-background-600 text-gray-400'}`}>
@@ -102,10 +61,10 @@ export default function AdminProfessores() {
               </select>
             </div>
             <div>
-              <label className="label">Casa *</label>
-              <select className="input" value={form.casa_id}
-                onChange={(e) => setForm({ ...form, casa_id: e.target.value })} required>
-                <option value="">Selecione...</option>
+              <label className="label">Casa (Opcional)</label>
+              <select className="input" value={form.casa_id || ''}
+                onChange={(e) => setForm({ ...form, casa_id: e.target.value })}>
+                <option value="">Selecione (Nenhuma)</option>
                 {casas.map((c) => <option key={c.id} value={c.id}>{c.brasao} {c.nome}</option>)}
               </select>
             </div>

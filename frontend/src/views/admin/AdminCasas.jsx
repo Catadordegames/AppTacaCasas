@@ -1,48 +1,15 @@
 // ============================================================
 // pages/admin/AdminCasas.jsx
 // CRUD completo de Casas (Equipes).
-// Padrão que todas as outras páginas admin seguem:
-// 1. carregar() — busca do backend
-// 2. Modal de criação/edição com form controlado
-// 3. handleSalvar() — POST ou PUT dependendo de `editando`
-// 4. handleDeletar() — DELETE com confirmação
 // ============================================================
 
-import { useState, useEffect } from 'react'
 import { Plus, Shield } from 'lucide-react'
-import { useCrud } from '../../hooks/useCrud'
-import toast from 'react-hot-toast'
 import CrudTable from '../../components/ui/CrudTable'
 import Modal from '../../components/ui/Modal'
-
-const FORM_VAZIO = { nome: '', brasao: '' }
+import useAdminCasas from '../../hooks/useAdminCasas'
 
 export default function AdminCasas() {
-  const { data: casas, loading, loadingSave: salvando, loadingDelete: deletando, load, save, remove } = useCrud('/casas', 'Casa')
-
-  const [modalAberto, setModalAberto] = useState(false)
-  const [editando, setEditando] = useState(null)
-  const [form, setForm] = useState(FORM_VAZIO)
-
-  useEffect(() => { load() }, [load])
-
-  const abrirCriar = () => { setEditando(null); setForm(FORM_VAZIO); setModalAberto(true) }
-  const abrirEditar = (casa) => { setEditando(casa); setForm({ nome: casa.nome, brasao: casa.brasao }); setModalAberto(true) }
-  const fecharModal = () => { setModalAberto(false); setEditando(null); setForm(FORM_VAZIO) }
-
-  const handleSalvar = async (e) => {
-    e.preventDefault()
-    if (!form.nome.trim() || !form.brasao.trim()) { toast.error('Preencha todos os campos.'); return }
-    try {
-      await save(form, editando?.id)
-      fecharModal()
-    } catch {} // handled in hook
-  }
-
-  const handleDeletar = async (casa) => {
-    if (!confirm(`Deletar "${casa.nome}"? Esta ação não pode ser desfeita.`)) return
-    await remove(casa.id)
-  }
+  const { casas, loading, salvando, deletando, modalAberto, editando, form, setForm, abrirCriar, abrirEditar, fecharModal, handleSalvar, handleDeletar } = useAdminCasas()
 
   const columns = [
     { key: 'brasao', label: 'Brasão', render: (v) => <span className="text-2xl">{v}</span> },

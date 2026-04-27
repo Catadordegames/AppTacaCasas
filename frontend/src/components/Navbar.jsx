@@ -26,7 +26,6 @@ const NAV_LINKS = {
 // Links de administração
 const ADMIN_LINKS = [
   { to: '/cadastro-rapido', label: 'Cadastro Rápido' },
-  { to: '/admin/lancamentos', label: 'Lançamentos' },
   { to: '/admin/casas', label: 'Casas' },
   { to: '/admin/turmas', label: 'Turmas' },
   { to: '/admin/professores', label: 'Professores' },

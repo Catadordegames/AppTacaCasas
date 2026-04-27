@@ -34,7 +34,7 @@ export default function ListagemLancamentos() {
         total,
     } = useListagemLancamentos()
 
-    const [mostrarFiltros, setMostrarFiltros] = useState(false)
+    const [mostrarFiltros, setMostrarFiltros] = useState(true)
 
     const toggleFiltros = () => setMostrarFiltros((v) => !v)
 

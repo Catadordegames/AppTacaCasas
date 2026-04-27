@@ -1,53 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
 import { Plus, Tag } from 'lucide-react'
-import api from '../../services/api'
-import toast from 'react-hot-toast'
 import CrudTable from '../../components/ui/CrudTable'
 import Modal from '../../components/ui/Modal'
-
-const FORM_VAZIO = { nome: '', pontos: '' }
+import useAdminJustificativas from '../../hooks/useAdminJustificativas'
 
 export default function AdminJustificativas() {
-  const [justificativas, setJustificativas] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [modalAberto, setModalAberto] = useState(false)
-  const [editando, setEditando] = useState(null)
-  const [form, setForm] = useState(FORM_VAZIO)
-  const [salvando, setSalvando] = useState(false)
-  const [deletando, setDeletando] = useState(null)
-
-  const carregar = useCallback(async () => {
-    try { setLoading(true); const { data } = await api.get('/justificativas'); setJustificativas(data) }
-    catch { toast.error('Erro ao carregar.') }
-    finally { setLoading(false) }
-  }, [])
-
-  useEffect(() => { carregar() }, [carregar])
-
-  const abrirCriar = () => { setEditando(null); setForm(FORM_VAZIO); setModalAberto(true) }
-  const abrirEditar = (j) => { setEditando(j); setForm({ nome: j.nome, pontos: j.pontos }); setModalAberto(true) }
-  const fecharModal = () => { setModalAberto(false); setEditando(null) }
-
-  const handleSalvar = async (e) => {
-    e.preventDefault()
-    try {
-      setSalvando(true)
-      const payload = { nome: form.nome, pontos: Number(form.pontos) }
-      if (editando) { await api.put(`/justificativas/${editando.id}`, payload); toast.success('Justificativa atualizada!') }
-      else { await api.post('/justificativas', payload); toast.success('Justificativa criada!') }
-      fecharModal(); carregar()
-    } catch (err) { toast.error(err.response?.data?.error || 'Erro ao salvar.') }
-    finally { setSalvando(false) }
-  }
-
-  const handleDeletar = async (j) => {
-    if (!confirm(`Deletar "${j.nome}"?`)) return
-    try {
-      setDeletando(j.id); await api.delete(`/justificativas/${j.id}`)
-      toast.success('Removida.'); setJustificativas((prev) => prev.filter((x) => x.id !== j.id))
-    } catch (err) { toast.error(err.response?.data?.error || 'Erro ao deletar.') }
-    finally { setDeletando(null) }
-  }
+  const { justificativas, loading, salvando, deletando, modalAberto, editando, form, setForm, abrirCriar, abrirEditar, fecharModal, handleSalvar, handleDeletar } = useAdminJustificativas()
 
   const columns = [
     { key: 'nome',   label: 'Descrição' },
