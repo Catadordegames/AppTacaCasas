@@ -1,6 +1,13 @@
 -- Exemplo de sintaxe para criar uma tabela no MariaDB
 -- Você pode usar este arquivo para definir a estrutura do seu banco de dados.
 -- O MariaDB executará este arquivo automaticamente ao iniciar o contêiner (se o volume /var/lib/mysql estiver vazio).
+
+CREATE TABLE IF NOT EXISTS _migrations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    filename VARCHAR(255) NOT NULL UNIQUE,
+    executed_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
 CREATE TABLE IF NOT EXISTS casas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,

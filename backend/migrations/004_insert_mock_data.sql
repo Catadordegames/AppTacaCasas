@@ -4,16 +4,16 @@
 -- ============================================================
 
 -- Garante que algumas turmas e justificativas existam antes de inserir alunos e lançamentos
-INSERT IGNORE INTO turmas (id, nome, turno) VALUES
-(1, '6º A', 'Matutino'),
-(2, '6º B', 'Matutino'),
-(3, '7º A', 'Vespertino');
+INSERT IGNORE INTO turmas (nome, turno) VALUES
+('6º A', 'Matutino'),
+('6º B', 'Matutino'),
+('7º A', 'Vespertino');
 
-INSERT IGNORE INTO justificativas (id, nome, pontos) VALUES
-(1, 'Participação em aula', 10),
-(2, 'Trabalho em equipe', 20),
-(3, 'Bom comportamento', 15),
-(4, 'Olimpíada / Competição', 50);
+INSERT IGNORE INTO justificativas (nome, pontos) VALUES
+('Participação em aula', 10),
+('Trabalho em equipe', 20),
+('Bom comportamento', 15),
+('Olimpíada / Competição', 50);
 
 -- Insere as novas casas personalizadas (ignorando IDs fixos caso não seja necessário, mas mantendo a ordem pra garantir)
 INSERT INTO casas (nome, brasao) VALUES
