@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useCrud } from './useCrud'
 import toast from 'react-hot-toast'
 
-const FORM_VAZIO = { nome: '', brasao: '' }
+const FORM_VAZIO = { nome: '', brasao: '', arquivoBrasao: null }
 
 export default function useAdminCasas() {
   const { data: casas, loading, loadingSave: salvando, loadingDelete: deletando, load, save, remove } = useCrud('/casas', 'Casa')
@@ -14,13 +14,25 @@ export default function useAdminCasas() {
   useEffect(() => { load() }, [load])
 
   const abrirCriar = () => { setEditando(null); setForm(FORM_VAZIO); setModalAberto(true) }
-  const abrirEditar = (casa) => { setEditando(casa); setForm({ nome: casa.nome, brasao: casa.brasao }); setModalAberto(true) }
+  const abrirEditar = (casa) => { setEditando(casa); setForm({ nome: casa.nome, brasao: casa.brasao, arquivoBrasao: null }); setModalAberto(true) }
   const fecharModal = () => { setModalAberto(false); setEditando(null); setForm(FORM_VAZIO) }
 
   const handleSalvar = async (e) => {
     e.preventDefault()
-    if (!form.nome.trim() || !form.brasao.trim()) { toast.error('Preencha todos os campos.'); return }
-    try { await save(form, editando?.id); fecharModal() } catch {}
+    if (!form.nome.trim() || (!form.brasao.trim() && !form.arquivoBrasao)) { toast.error('Preencha o nome e insira um brasão.'); return }
+    try {
+      const formData = new FormData()
+      formData.append('nome', form.nome)
+      
+      if (form.arquivoBrasao) {
+        formData.append('brasaoFile', form.arquivoBrasao)
+      } else {
+        formData.append('brasao', form.brasao)
+      }
+
+      await save(formData, editando?.id)
+      fecharModal()
+    } catch {}
   }
 
   const handleDeletar = async (casa) => {

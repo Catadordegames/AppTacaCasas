@@ -12,7 +12,26 @@ export default function AdminCasas() {
   const { casas, loading, salvando, deletando, modalAberto, editando, form, setForm, abrirCriar, abrirEditar, fecharModal, handleSalvar, handleDeletar } = useAdminCasas()
 
   const columns = [
-    { key: 'brasao', label: 'Brasão', render: (v) => <span className="text-2xl">{v}</span> },
+    { 
+      key: 'brasao', 
+      label: 'Brasão', 
+      render: (v) => v?.startsWith('/api/uploads') ? (
+        <div className="relative w-16 h-16 md:w-20 md:h-20 flex items-center justify-center group cursor-default">
+          <div className="absolute inset-0 bg-white/10 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <img 
+            src={v} 
+            alt="Brasão" 
+            className="w-full h-full object-contain relative z-10 transition-transform duration-300 group-hover:scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.1)] group-hover:drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]" 
+          />
+        </div>
+      ) : (
+        <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center group cursor-default">
+          <span className="text-4xl md:text-5xl transition-transform duration-300 group-hover:scale-110 drop-shadow-md">
+            {v}
+          </span>
+        </div>
+      )
+    },
     { key: 'nome',   label: 'Nome'   },
   ]
 
@@ -49,10 +68,15 @@ export default function AdminCasas() {
                 onChange={(e) => setForm({ ...form, nome: e.target.value })} required />
             </div>
             <div>
-              <label className="label">Brasão (emoji ou URL) *</label>
+              <label className="label">Brasão (Imagem .png)</label>
+              <input type="file" className="input p-2" accept=".png, image/png"
+                onChange={(e) => setForm({ ...form, arquivoBrasao: e.target.files[0] })} />
+            </div>
+            <div>
+              <label className="label">Ou Brasão Alternativo (emoji)</label>
               <input className="input" placeholder="Ex: 🦁" value={form.brasao}
-                onChange={(e) => setForm({ ...form, brasao: e.target.value })} required />
-              {form.brasao && <div className="text-center text-4xl mt-2">{form.brasao}</div>}
+                onChange={(e) => setForm({ ...form, brasao: e.target.value })} />
+              {form.brasao && !form.arquivoBrasao && <div className="text-center text-4xl mt-2">{form.brasao}</div>}
             </div>
             <div className="flex gap-2 pt-2">
               <button type="button" onClick={fecharModal} className="btn-secondary flex-1">Cancelar</button>

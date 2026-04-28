@@ -6,6 +6,7 @@
 
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 
 // Importa todos os roteadores
 const authRoutes = require('./routes/auth.routes');
@@ -32,6 +33,9 @@ app.use(cors({
 
 // Interpreta corpo das requisições como JSON
 app.use(express.json());
+
+// Serve arquivos estáticos da pasta mapeada no volume (uploads)
+app.use('/api/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // ── Rotas ────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
