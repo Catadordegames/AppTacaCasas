@@ -11,9 +11,10 @@ export default function Login() {
   const { form, errors, loading, showSenha, setShowSenha, handleChange, handleSubmit } = useLogin()
 
   return (
-    <div className="min-h-screen bg-background-900 flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        <LoginLogo />
+    <div className="fixed inset-0 bg-background-900 overflow-y-auto">
+      <div className="min-h-full flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-sm">
+          <LoginLogo />
         <Card>
           <CardHeader>
             <CardTitle>Entrar no Sistema</CardTitle>
@@ -58,8 +59,9 @@ export default function Login() {
           </CardContent>
         </Card>
         <p className="text-center text-xs text-gray-600 mt-4">
-          Apenas professores e coordenação têm acesso ao sistema.
+          Apenas professores e gestão da escola têm acesso ao sistema.
         </p>
+      </div>
       </div>
     </div>
   )

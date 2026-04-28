@@ -2,15 +2,18 @@
 // components/layout/Navbar.jsx
 // Barra de navegação responsiva com menu hambúrguer no mobile.
 // Mostra itens diferentes dependendo do nível de permissão.
+// Adicionado Modal de Reset Anual para Admins.
 // ============================================================
 
 import { useState, useMemo, useCallback } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Trophy, Menu, X, LogOut, Shield, User } from 'lucide-react'
+import { Trophy, Menu, X, LogOut, Shield, User, AlertTriangle } from 'lucide-react'
 
 import { useAuth } from '../context/AuthContext'
-import { Button } from './ui'
+import { Button, Input } from './ui'
+import Modal from './ui/Modal'
 import ThemeToggle from './ThemeToggle'
+import { downloadBlobFromApi } from '../utils/downloadHelper'
 
 // Links de navegação
 const NAV_LINKS = {
@@ -38,6 +41,7 @@ export default function Navbar() {
   const location = useLocation()
   const navigate = useNavigate()
   const [menuAberto, setMenuAberto] = useState(false)
+  const [resetModalAberto, setResetModalAberto] = useState(false)
 
   const handleLogout = useCallback(() => {
     logout()
@@ -67,6 +71,7 @@ export default function Navbar() {
             usuario={usuario}
             isAdmin={isAdmin}
             isActive={isActive}
+            onOpenReset={() => setResetModalAberto(true)}
           />
 
           {/* Ações direita */}
@@ -106,8 +111,18 @@ export default function Navbar() {
           isActive={isActive}
           onLogout={handleLogout}
           onClose={closeMenu}
+          onOpenReset={() => {
+            setResetModalAberto(true)
+            closeMenu()
+          }}
         />
       )}
+
+      {/* Modal de Reset de Ano Letivo */}
+      <ResetAnualModal 
+        isOpen={resetModalAberto} 
+        onClose={() => setResetModalAberto(false)} 
+      />
     </nav>
   )
 }
@@ -129,7 +144,7 @@ function Logo() {
   )
 }
 
-function DesktopNav({ usuario, isAdmin, isActive }) {
+function DesktopNav({ usuario, isAdmin, isActive, onOpenReset }) {
   return (
     <div className="hidden md:flex items-center gap-6 text-sm font-semibold">
       <NavLink to="/" isActive={isActive('/')}>Placar</NavLink>
@@ -144,7 +159,7 @@ function DesktopNav({ usuario, isAdmin, isActive }) {
         </>
       )}
 
-      {isAdmin && <AdminDropdown />}
+      {isAdmin && <AdminDropdown onOpenReset={onOpenReset} />}
     </div>
   )
 }
@@ -163,7 +178,7 @@ function NavLink({ to, children, isActive }) {
   )
 }
 
-function AdminDropdown() {
+function AdminDropdown({ onOpenReset }) {
   return (
     <div className="relative group">
       <button className="flex items-center gap-1 text-purple-400 hover:text-purple-300 pb-0.5">
@@ -171,19 +186,26 @@ function AdminDropdown() {
         Admin
       </button>
       <div
-        className="absolute right-0 top-full mt-1 w-48 bg-background-700 border border-background-500 rounded-xl shadow-xl
-                   opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50"
+        className="absolute right-0 top-full mt-1 w-56 bg-background-700 border border-background-500 rounded-xl shadow-xl
+                   opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden"
       >
         {ADMIN_LINKS.map((item) => (
           <Link
             key={item.to}
             to={item.to}
-            className="block px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-background-600 
-                       first:rounded-t-xl last:rounded-b-xl transition-colors"
+            className="block px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-background-600 transition-colors"
           >
             {item.label}
           </Link>
         ))}
+        <div className="border-t border-background-600 mt-1">
+          <button 
+            onClick={onOpenReset}
+            className="w-full text-left px-4 py-2.5 text-sm text-red-400 font-bold hover:bg-red-500/10 transition-colors"
+          >
+            ⚠️ Reiniciar Ano Letivo
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -239,7 +261,7 @@ function MobileMenuButton({ isOpen, onClick }) {
   )
 }
 
-function MobileNav({ usuario, isAdmin, isActive, onLogout, onClose }) {
+function MobileNav({ usuario, isAdmin, isActive, onLogout, onClose, onOpenReset }) {
   return (
     <div className="md:hidden bg-background-800 border-t border-background-600 px-4 pb-4 space-y-1">
       <MobileLink to="/" label="🏆 Placar" onClick={onClose} />
@@ -264,6 +286,13 @@ function MobileNav({ usuario, isAdmin, isActive, onLogout, onClose }) {
               onClick={onClose}
             />
           ))}
+          <button
+            onClick={onOpenReset}
+            className="w-full text-left px-3 py-2 text-red-400 hover:bg-background-700 rounded-lg 
+                       transition-colors text-sm font-bold"
+          >
+            ⚠️ Reiniciar Ano Letivo
+          </button>
         </>
       )}
 
@@ -295,5 +324,92 @@ function MobileLink({ to, label, onClick }) {
     >
       {label}
     </Link>
+  )
+}
+
+// ============================================================
+// Modal de Reset Anual
+// ============================================================
+
+function ResetAnualModal({ isOpen, onClose }) {
+  const [senha, setSenha] = useState('')
+  const [frase, setFrase] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  if (!isOpen) return null
+
+  const handleConfirm = async () => {
+    if (frase !== 'REINICIAR_PONTUACAO') return
+    setLoading(true)
+    try {
+      await downloadBlobFromApi('/export/reset', 'backup_reset.csv', {
+        method: 'POST',
+        body: { confirmar: true, senha }
+      })
+      alert('Ano letivo reiniciado com sucesso! Os lançamentos foram apagados e o backup salvo e baixado.')
+      window.location.reload()
+    } catch (e) {
+      alert(e.response?.data?.error || 'Falha ao reiniciar. Verifique a senha e tente novamente.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Reseta os campos ao fechar
+  const handleClose = () => {
+    setSenha('')
+    setFrase('')
+    onClose()
+  }
+
+  return (
+    <Modal title="Zona de Perigo" onClose={handleClose}>
+      <div className="space-y-6 text-center">
+        <div className="flex justify-center text-red-500">
+          <AlertTriangle size={64} />
+        </div>
+        
+        <div>
+          <h2 className="text-xl font-bold text-red-400 mb-2 uppercase">TEM CERTEZA?</h2>
+          <p className="text-sm text-gray-300 text-left bg-red-900/20 p-4 rounded-xl border border-red-900/50">
+            Esta operação irá <strong>APAGAR PERMANENTEMENTE todos os lançamentos de pontos</strong> do banco de dados para iniciar uma nova temporada de gincana. 
+            Antes de deletar, o sistema gerará automaticamente uma planilha CSV com os dados atuais.
+          </p>
+        </div>
+
+        <div className="space-y-4 text-left">
+          <Input 
+            label="Para continuar, digite exatamente: REINICIAR_PONTUACAO" 
+            value={frase}
+            onChange={(e) => setFrase(e.target.value)}
+            placeholder="REINICIAR_PONTUACAO"
+            disabled={loading}
+          />
+          <Input 
+            label="Sua senha de Administrador" 
+            type="password"
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
+            placeholder="Digite sua senha..."
+            disabled={loading}
+          />
+        </div>
+
+        <div className="flex gap-3 pt-2">
+          <Button variant="secondary" onClick={handleClose} disabled={loading} className="flex-1">
+            Cancelar
+          </Button>
+          <Button 
+            variant="primary" 
+            onClick={handleConfirm} 
+            disabled={frase !== 'REINICIAR_PONTUACAO' || !senha || loading}
+            className="flex-1 bg-red-600 hover:bg-red-500 border-none text-white"
+            loading={loading}
+          >
+            Apagar Tudo
+          </Button>
+        </div>
+      </div>
+    </Modal>
   )
 }

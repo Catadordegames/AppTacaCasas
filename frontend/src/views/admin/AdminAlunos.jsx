@@ -1,7 +1,9 @@
-import { Plus, GraduationCap } from 'lucide-react'
+import { Plus, GraduationCap, Download } from 'lucide-react'
+import { useState } from 'react'
 import CrudTable from '../../components/ui/CrudTable'
 import Modal from '../../components/ui/Modal'
 import useAdminAlunos from '../../hooks/useAdminAlunos'
+import { downloadBlobFromApi } from '../../utils/downloadHelper'
 
 export default function AdminAlunos() {
   const { alunos, casas, turmas, loading, salvando, deletando, modalAberto, editando, form, setForm, abrirCriar, abrirEditar, fecharModal, handleSalvar, handleDeletar, filtroTurma, setFiltroTurma, filtroCasa, setFiltroCasa } = useAdminAlunos()
@@ -12,6 +14,14 @@ export default function AdminAlunos() {
     { key: 'casa_nome',  label: 'Casa', render: (v) => v || <span className="text-gray-600">—</span> },
   ]
 
+  const [isExporting, setIsExporting] = useState(false)
+  const handleExportar = async () => {
+    setIsExporting(true)
+    try { await downloadBlobFromApi('/export/alunos', 'alunos.csv') } 
+    catch (e) { alert('Erro ao exportar alunos.') } 
+    finally { setIsExporting(false) }
+  }
+
   return (
     <div className="space-y-5">
       <div className="card px-4 py-3 border border-background-600 flex items-center justify-between flex-wrap gap-3">
@@ -19,9 +29,14 @@ export default function AdminAlunos() {
           <GraduationCap size={22} className="text-primary-400" />
           <h1 className="text-2xl font-display font-bold text-white">Alunos</h1>
         </div>
-        <button onClick={abrirCriar} className="btn-primary flex items-center gap-2 text-sm">
-          <Plus size={16} /> Novo Aluno
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={handleExportar} disabled={isExporting} className="btn-secondary flex items-center gap-2 text-sm">
+            <Download size={16} /> {isExporting ? 'Exportando...' : 'Exportar CSV'}
+          </button>
+          <button onClick={abrirCriar} className="btn-primary flex items-center gap-2 text-sm">
+            <Plus size={16} /> Novo Aluno
+          </button>
+        </div>
       </div>
 
       {/* Filtros */}
@@ -32,7 +47,7 @@ export default function AdminAlunos() {
         </select>
         <select className="input py-1.5 text-sm flex-1 min-w-32" value={filtroCasa} onChange={(e) => setFiltroCasa(e.target.value)}>
           <option value="">Todas as casas</option>
-          {casas.map((c) => <option key={c.id} value={c.id}>{c.brasao} {c.nome}</option>)}
+          {casas.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
         </select>
       </div>
 
@@ -62,7 +77,7 @@ export default function AdminAlunos() {
               <label className="label">Casa <span className="text-gray-500 font-normal">(opcional)</span></label>
               <select className="input" value={form.casa_id} onChange={(e) => setForm({ ...form, casa_id: e.target.value })}>
                 <option value="">Sem casa atribuída</option>
-                {casas.map((c) => <option key={c.id} value={c.id}>{c.brasao} {c.nome}</option>)}
+                {casas.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
               </select>
             </div>
             <div className="flex gap-2 pt-2">

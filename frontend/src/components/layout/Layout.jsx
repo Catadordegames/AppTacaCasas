@@ -11,6 +11,7 @@ import Modal from '../ui/Modal'
 import { Button } from '../ui'
 import { useAuth } from '../../context/AuthContext'
 import { AlertCircle } from 'lucide-react'
+import PWAInstallPrompt from '../ui/PWAInstallPrompt'
 
 function SugestaoSenhaModal() {
   const { usuario } = useAuth()
@@ -55,7 +56,7 @@ function SugestaoSenhaModal() {
           Notamos que você ainda está usando a senha provisória. Para a segurança da sua conta, recomendamos fortemente que você altere sua senha agora.
         </p>
         <p className="font-semibold text-white">Deseja alterar sua senha agora?</p>
-        
+
         <div className="flex gap-3 pt-4">
           <Button variant="secondary" onClick={handleNao} className="flex-1">
             Mais tarde
@@ -76,10 +77,20 @@ export default function Layout() {
       <main className="flex-1 container mx-auto px-4 py-6 max-w-5xl page-enter">
         <Outlet />
       </main>
-      <footer className="bg-background-800 border-t border-background-600 text-center text-xs text-gray-500 py-4 mt-auto">
-        <span className="font-display">Taça das Casas</span> · CEF 102 Norte · {new Date().getFullYear()}
+      <footer className="bg-background-800 border-t border-background-600 py-4 mt-auto">
+        <div className="container mx-auto px-4 flex flex-col items-center gap-1">
+          <span className="font-display text-xs text-gray-500">
+            Taça das Casas · CEF 102 Norte · {new Date().getFullYear()}
+          </span>
+          <span className="text-[10px] text-gray-600 mt-1">
+            Desenvolvido pelos alunos do CEUB:{' '}
+            <a href="https://github.com/Catadordegames" target="_blank" rel="noopener noreferrer" className="text-gray-300 underline hover:text-primary-400 transition-colors">Cauê</a> e{' '}
+            <a href="https://github.com/oddcaio" target="_blank" rel="noopener noreferrer" className="text-gray-300 underline hover:text-primary-400 transition-colors">Caio</a>
+          </span>
+        </div>
       </footer>
       <SugestaoSenhaModal />
+      <PWAInstallPrompt />
     </div>
   )
 }

@@ -9,6 +9,11 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
 const LancamentosRepository = require('../repositories/lancamentos.repository');
+const AuthRepository = require('../repositories/auth.repository');
+const AlunosRepository = require('../repositories/alunos.repository');
+const ProfessoresRepository = require('../repositories/professores.repository');
+const TurmasRepository = require('../repositories/turmas.repository');
+const bcrypt = require('bcryptjs');
 const { autenticar, apenasAdmin } = require('../middlewares/auth.middleware');
 const { gerarSalvarEValidarCSV } = require('../services/exports.service');
 
@@ -23,6 +28,33 @@ const enviarCSV = (res, result, filename) => {
   } else {
     res.status(500).json({ error: 'Falha ao gerar ou validar o arquivo CSV.' });
   }
+};
+
+/**
+ * Função utilitária para formatar os lançamentos antes de exportar
+ * Remove IDs de FKs e renomeia colunas para ficarem amigáveis
+ */
+const formatarLancamentosParaCSV = (rows) => {
+  return rows.map(row => {
+    let dataFormatada = row.data_lancamento;
+    if (row.data_lancamento) {
+      const d = new Date(row.data_lancamento);
+      dataFormatada = d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+    }
+
+    return {
+      'ID': row.id,
+      'Data': dataFormatada,
+      'Casa': row.casa_nome,
+      'Pontos': row.pontuacao,
+      'Professor': row.professor_nome,
+      'Aluno': row.aluno_nome || '-',
+      'Turma': row.turma_nome || '-',
+      'Turno': row.turno || '-',
+      'Justificativa': row.justificativa_snapshot,
+      'Tipo': row.is_custom ? 'Customizada' : 'Pré-definida',
+    };
+  });
 };
 
 /**
@@ -43,7 +75,7 @@ router.get('/lancamentos', autenticar, apenasAdmin, async (req, res, next) => {
 
     query += ' ORDER BY data_lancamento DESC';
 
-    const [rows] = await db.query(query, params);
+    let [rows] = await db.query(query, params);
 
     if (rows.length === 0) {
       return res.status(404).json({ error: 'Nenhum lançamento encontrado para exportar.' });
@@ -52,7 +84,8 @@ router.get('/lancamentos', autenticar, apenasAdmin, async (req, res, next) => {
     const filename = `lancamentos_${new Date().toISOString().split('T')[0]}.csv`;
     
     // Passa pela esteira única (Geração -> Salvamento Fisico -> Validação Booleana)
-    const result = await gerarSalvarEValidarCSV(rows, filename);
+    const rowsFormatadas = formatarLancamentosParaCSV(rows);
+    const result = await gerarSalvarEValidarCSV(rowsFormatadas, filename);
     
     enviarCSV(res, result, filename);
   } catch (err) {
@@ -91,6 +124,86 @@ router.get('/ranking', autenticar, apenasAdmin, async (req, res, next) => {
 });
 
 /**
+ * GET /api/export/alunos
+ * Exporta todos os alunos como CSV.
+ */
+router.get('/alunos', autenticar, apenasAdmin, async (req, res, next) => {
+  try {
+    const rows = await AlunosRepository.listar(); // Retorna com JOINs de turma e casa
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Nenhum aluno encontrado para exportar.' });
+    }
+
+    const rowsFormatadas = rows.map(r => ({
+      'ID': r.id,
+      'Aluno': r.nome,
+      'Turma': r.turma_nome || '-',
+      'Casa': r.casa_nome || '-'
+    }));
+
+    const filename = `alunos_${new Date().toISOString().split('T')[0]}.csv`;
+    const result = await gerarSalvarEValidarCSV(rowsFormatadas, filename);
+    enviarCSV(res, result, filename);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * GET /api/export/professores
+ * Exporta todos os professores como CSV.
+ */
+router.get('/professores', autenticar, apenasAdmin, async (req, res, next) => {
+  try {
+    const rows = await ProfessoresRepository.listar(); // Retorna com JOIN de casa
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Nenhum professor encontrado para exportar.' });
+    }
+
+    const rowsFormatadas = rows.map(r => ({
+      'ID': r.id,
+      'Professor': r.nome,
+      'Permissão': r.permissao === 1 ? 'Administrador' : 'Professor',
+      'Casa do Coração': r.casa_nome || '-'
+    }));
+
+    const filename = `professores_${new Date().toISOString().split('T')[0]}.csv`;
+    const result = await gerarSalvarEValidarCSV(rowsFormatadas, filename);
+    enviarCSV(res, result, filename);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * GET /api/export/turmas
+ * Exporta todas as turmas como CSV.
+ */
+router.get('/turmas', autenticar, apenasAdmin, async (req, res, next) => {
+  try {
+    const rows = await TurmasRepository.listar();
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Nenhuma turma encontrada para exportar.' });
+    }
+
+    const rowsFormatadas = rows.map(r => ({
+      'ID': r.id,
+      'Turma': r.nome,
+      'Turno': r.turno || '-'
+    }));
+
+    const filename = `turmas_${new Date().toISOString().split('T')[0]}.csv`;
+    const result = await gerarSalvarEValidarCSV(rowsFormatadas, filename);
+    enviarCSV(res, result, filename);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
  * POST /api/export/reset
  * Reset anual: apaga todos os lançamentos após exportar.
  * OPERAÇÃO DESTRUTIVA — apenas admin.
@@ -98,13 +211,26 @@ router.get('/ranking', autenticar, apenasAdmin, async (req, res, next) => {
  */
 router.post('/reset', autenticar, apenasAdmin, async (req, res, next) => {
   try {
-    if (!req.body.confirmar) {
+    const { confirmar, senha } = req.body;
+    if (!confirmar || !senha) {
       return res.status(400).json({
-        error: 'Envie { "confirmar": true } no body para confirmar o reset.',
+        error: 'Envie { "confirmar": true, "senha": "sua_senha" } no body para confirmar o reset.',
       });
     }
 
-    const [rows] = await db.query('SELECT * FROM lancamentos ORDER BY data_lancamento DESC');
+    // Validação de senha
+    const adminId = req.usuario.id; // Pegue o ID do admin que fez a requisição (do token jwt)
+    const adminData = await AuthRepository.buscarPorId(adminId); // Vamos assumir que buscarPorId existe, se não usaremos query direta
+    if (!adminData) {
+        return res.status(401).json({ error: 'Administrador não encontrado.' });
+    }
+
+    const senhaCorreta = await bcrypt.compare(senha, adminData.senha);
+    if (!senhaCorreta) {
+        return res.status(401).json({ error: 'Senha incorreta. Reset cancelado.' });
+    }
+
+    let [rows] = await db.query('SELECT * FROM lancamentos ORDER BY data_lancamento DESC');
     
     if (rows.length === 0) {
       return res.status(400).json({ error: 'Não há lançamentos para resetar.' });
@@ -113,7 +239,8 @@ router.post('/reset', autenticar, apenasAdmin, async (req, res, next) => {
     const filename = `backup_reset_${new Date().toISOString().split('T')[0]}.csv`;
     
     // O caso "Crucial": Gera, Salva e Valida
-    const result = await gerarSalvarEValidarCSV(rows, filename);
+    const rowsFormatadas = formatarLancamentosParaCSV(rows);
+    const result = await gerarSalvarEValidarCSV(rowsFormatadas, filename);
 
     // Usa a trava booleana (validação)
     if (!result.success) {

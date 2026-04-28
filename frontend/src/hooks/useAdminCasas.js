@@ -36,7 +36,6 @@ export default function useAdminCasas() {
   }
 
   const handleDeletar = async (casa) => {
-    if (!confirm(`Deletar "${casa.nome}"? Esta ação não pode ser desfeita.`)) return
     await remove(casa.id)
   }
 

@@ -77,7 +77,7 @@ Aguarde ~30 segundos para o MariaDB inicializar na primeira vez.
 ### Credenciais padrão
 
 ```
-Usuário: Coordenação
+Usuário: Gestão da Escola
 Senha:   password
 ```
 
@@ -92,7 +92,7 @@ Senha:   password
 > Depois atualize diretamente no banco:
 >
 > ```sql
-> UPDATE professores SET senha = 'HASH_GERADO' WHERE nome = 'Coordenação';
+> UPDATE professores SET senha = 'HASH_GERADO' WHERE nome = 'Gestão da Escola';
 > ```
 
 ### Comandos úteis com Docker
@@ -172,7 +172,7 @@ mysql -u root -p < database/init.sql
 |------------------------|-------------|----------------------------------------------------------|
 | Público                | —           | Ver placar/ranking (sem login)                           |
 | Professor              | `2`         | Login, lançar pontos, ver/deletar **seus** lançamentos   |
-| Coordenação / Admin    | `1`         | CRUD completo de tudo, deletar qualquer lançamento, exportar CSV, reset anual |
+| Gestão da Escola / Admin    | `1`         | CRUD completo de tudo, deletar qualquer lançamento, exportar CSV, reset anual |
 
 ---
 
@@ -241,7 +241,7 @@ POST /api/auth/login
 Content-Type: application/json
 
 {
-  "nome": "Coordenação",
+  "nome": "Gestão da Escola",
   "senha": "password"
 }
 ```
@@ -253,7 +253,7 @@ Content-Type: application/json
   "token": "eyJhbGciOiJIUzI1NiIs...",
   "usuario": {
     "id": 1,
-    "nome": "Coordenação",
+    "nome": "Gestão da Escola",
     "permissao": 1,
     "casa_id": 1
   }

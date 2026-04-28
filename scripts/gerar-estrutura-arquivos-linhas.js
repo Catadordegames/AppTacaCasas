@@ -37,7 +37,7 @@ const DESCRIPTIONS = {
   'frontend/src/services': 'Libs internas (Manipuladores de Requisição Axios)',
   'frontend/src/utils': 'Extratores, formatadores e classes dinâmicas',
   'frontend/src/views': 'Templates visuais principais da interface (Páginas)',
-  'frontend/src/views/admin': 'Páginas estritas ao perfil da Coordenação',
+  'frontend/src/views/admin': 'Páginas estritas ao perfil da Gestão da Escola',
   'frontend/src/views/professor': 'Páginas estritas ao perfil do Professor logado',
   'frontend/src/views/public': 'Placar das casas global / Dashboard',
   'docs': 'Documentação técnica e de gestão',

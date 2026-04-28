@@ -1,7 +1,9 @@
-import { Plus, BookOpen } from 'lucide-react'
+import { Plus, BookOpen, Download } from 'lucide-react'
+import { useState } from 'react'
 import CrudTable from '../../components/ui/CrudTable'
 import Modal from '../../components/ui/Modal'
 import useAdminTurmas from '../../hooks/useAdminTurmas'
+import { downloadBlobFromApi } from '../../utils/downloadHelper'
 
 const TURNOS = ['Matutino', 'Vespertino', 'Noturno', 'Integral']
 
@@ -15,6 +17,14 @@ export default function AdminTurmas() {
     )},
   ]
 
+  const [isExporting, setIsExporting] = useState(false)
+  const handleExportar = async () => {
+    setIsExporting(true)
+    try { await downloadBlobFromApi('/export/turmas', 'turmas.csv') } 
+    catch (e) { alert('Erro ao exportar turmas.') } 
+    finally { setIsExporting(false) }
+  }
+
   return (
     <div className="space-y-5">
       <div className="card px-4 py-3 border border-background-600 flex items-center justify-between flex-wrap gap-3">
@@ -22,9 +32,14 @@ export default function AdminTurmas() {
           <BookOpen size={22} className="text-primary-400" />
           <h1 className="text-2xl font-display font-bold text-white">Turmas</h1>
         </div>
-        <button onClick={abrirCriar} className="btn-primary flex items-center gap-2 text-sm">
-          <Plus size={16} /> Nova Turma
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={handleExportar} disabled={isExporting} className="btn-secondary flex items-center gap-2 text-sm">
+            <Download size={16} /> {isExporting ? 'Exportando...' : 'Exportar CSV'}
+          </button>
+          <button onClick={abrirCriar} className="btn-primary flex items-center gap-2 text-sm">
+            <Plus size={16} /> Nova Turma
+          </button>
+        </div>
       </div>
 
       <div className="card border border-background-600">

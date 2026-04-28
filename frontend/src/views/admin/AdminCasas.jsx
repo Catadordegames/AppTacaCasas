@@ -74,9 +74,23 @@ export default function AdminCasas() {
             </div>
             <div>
               <label className="label">Ou Brasão Alternativo (emoji)</label>
-              <input className="input" placeholder="Ex: 🦁" value={form.brasao}
-                onChange={(e) => setForm({ ...form, brasao: e.target.value })} />
-              {form.brasao && !form.arquivoBrasao && <div className="text-center text-4xl mt-2">{form.brasao}</div>}
+              <input 
+                className="input" 
+                placeholder="Ex: 🦁" 
+                value={form.brasao?.startsWith('/api/') ? '' : form.brasao}
+                onChange={(e) => setForm({ ...form, brasao: e.target.value })} 
+              />
+              
+              {/* Preview Inteligente */}
+              {form.brasao && !form.arquivoBrasao && (
+                <div className="flex justify-center mt-4 bg-background-700/50 p-4 rounded-xl border border-background-600">
+                  {form.brasao.startsWith('/api/') ? (
+                     <img src={form.brasao} alt="Preview do Brasão" className="w-16 h-16 object-contain drop-shadow-md" />
+                  ) : (
+                     <div className="text-center text-5xl drop-shadow-md">{form.brasao}</div>
+                  )}
+                </div>
+              )}
             </div>
             <div className="flex gap-2 pt-2">
               <button type="button" onClick={fecharModal} className="btn-secondary flex-1">Cancelar</button>

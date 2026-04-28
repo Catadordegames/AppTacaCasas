@@ -41,7 +41,6 @@ export default function useAdminAlunos() {
   }
 
   const handleDeletar = async (a) => {
-    if (!confirm(`Deletar o aluno "${a.nome}"?`)) return
     await remove(a.id)
   }
 

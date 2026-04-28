@@ -22,7 +22,6 @@ export default function useAdminTurmas() {
   }
 
   const handleDeletar = async (t) => {
-    if (!confirm(`Deletar a turma "${t.nome}"?`)) return
     await remove(t.id)
   }
 

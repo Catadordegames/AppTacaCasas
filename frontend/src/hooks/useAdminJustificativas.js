@@ -26,7 +26,6 @@ export default function useAdminJustificativas() {
   }
 
   const handleDeletar = async (j) => {
-    if (!confirm(`Deletar a justificativa "${j.nome}"?`)) return
     await remove(j.id)
   }
 

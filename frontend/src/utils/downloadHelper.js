@@ -5,13 +5,21 @@ import api from '../services/api';
  * 
  * @param {string} endpoint - Rota da API (ex: '/exports/alunos')
  * @param {string} defaultFilename - Nome padrão do arquivo (será usado se o backend não enviar no Content-Disposition)
+ * @param {object} options - Opções adicionais (method, body)
  */
-export const downloadBlobFromApi = async (endpoint, defaultFilename = 'export.csv') => {
+export const downloadBlobFromApi = async (endpoint, defaultFilename = 'export.csv', options = {}) => {
   try {
+    const { method = 'GET', body = null } = options;
+    
     // Fazer a requisição informando que a resposta esperada é um blob (arquivo)
-    const response = await api.get(endpoint, {
-      responseType: 'blob',
-    });
+    const config = { responseType: 'blob' };
+    
+    let response;
+    if (method.toUpperCase() === 'POST') {
+      response = await api.post(endpoint, body, config);
+    } else {
+      response = await api.get(endpoint, config);
+    }
 
     // Tentar extrair o nome do arquivo do cabeçalho de resposta (Content-Disposition)
     let filename = defaultFilename;

@@ -115,7 +115,7 @@ INSERT INTO
         casa_id
     )
 VALUES (
-        'Coordenação',
+        'Gestão da Escola',
         '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
         1,
         1

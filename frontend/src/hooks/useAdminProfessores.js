@@ -37,7 +37,6 @@ export default function useAdminProfessores() {
   }
 
   const handleDeletar = async (p) => {
-    if (!confirm(`Deletar o professor "${p.nome}"?`)) return
     await remove(p.id)
   }
 
