@@ -20,12 +20,14 @@ export default function AdminProfessores() {
 
   const abrirCriar = () => {
     setEditando(null)
-    setForm({ ...FORM_VAZIO, casa_id: casas[0]?.id || '' })
+    // Usa String() para garantir consistência de tipo com o value das <option> do select
+    setForm({ ...FORM_VAZIO, casa_id: String(casas[0]?.id || '') })
     setModalAberto(true)
   }
   const abrirEditar = (p) => {
     setEditando(p)
-    setForm({ nome: p.nome, senha: '', permissao: p.permissao, casa_id: p.casa_id })
+    // Converte para string: selects HTML sempre comparam valores como string
+    setForm({ nome: p.nome, senha: '', permissao: String(p.permissao), casa_id: String(p.casa_id) })
     setModalAberto(true)
   }
   const fecharModal = () => { setModalAberto(false); setEditando(null) }
@@ -96,9 +98,9 @@ export default function AdminProfessores() {
             <div>
               <label className="label">Perfil *</label>
               <select className="input" value={form.permissao}
-                onChange={(e) => setForm({ ...form, permissao: Number(e.target.value) })}>
-                <option value={1}>Professor</option>
-                <option value={2}>Coordenação / Admin</option>
+                onChange={(e) => setForm({ ...form, permissao: e.target.value })}>
+                <option value="1">Professor</option>
+                <option value="2">Coordenação / Admin</option>
               </select>
             </div>
             <div>
@@ -106,7 +108,7 @@ export default function AdminProfessores() {
               <select className="input" value={form.casa_id}
                 onChange={(e) => setForm({ ...form, casa_id: e.target.value })} required>
                 <option value="">Selecione...</option>
-                {casas.map((c) => <option key={c.id} value={c.id}>{c.brasao} {c.nome}</option>)}
+                {casas.map((c) => <option key={c.id} value={String(c.id)}>{c.brasao} {c.nome}</option>)}
               </select>
             </div>
             <div className="flex gap-2 pt-2">
