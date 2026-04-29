@@ -30,6 +30,13 @@ const LancamentosController = {
     } catch (e) { next(e); }
   },
 
+  async atualizar(req, res, next) {
+    try {
+      const atualizado = await LancamentosService.atualizar(req.params.id, req.usuario, req.body);
+      res.json(atualizado);
+    } catch (e) { next(e); }
+  },
+
   async deletar(req, res, next) {
     try {
       await LancamentosService.deletar(req.params.id, req.usuario);

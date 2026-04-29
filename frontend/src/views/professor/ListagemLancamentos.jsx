@@ -1,6 +1,7 @@
 // ============================================================
 // views/professor/ListagemLancamentos.jsx
-// View de listagem de lancamentos com filtros avancados.
+// View de listagem de lancamentos com filtros avancados
+// e exclusao com controle de permissao.
 // ============================================================
 
 import {
@@ -12,10 +13,13 @@ import {
     Home,
     CheckSquare,
     Square,
-    Download
+    Download,
+    Trash2,
+    AlertTriangle,
 } from 'lucide-react'
 import useListagemLancamentos from '../../hooks/useListagemLancamentos'
 import { downloadBlobFromApi } from '../../utils/downloadHelper'
+import Modal from '../../components/ui/Modal'
 import { useState, useMemo } from 'react'
 
 function formatDate(dt) {
@@ -31,27 +35,31 @@ export default function ListagemLancamentos() {
         casas,
         professores,
         loading,
+        deletando,
         filtros,
         setFiltro,
         total,
+        podeDeletar,
+        modalExclusao,
+        pedirExclusao,
+        cancelarExclusao,
+        confirmarExclusao,
     } = useListagemLancamentos()
 
     const [mostrarFiltros, setMostrarFiltros] = useState(true)
-
     const toggleFiltros = () => setMostrarFiltros((v) => !v)
 
     const isCustomChecked = filtros.is_custom
     const isPredefinidaChecked = filtros.is_predefinida
 
-    // Garante que pelo menos uma opcao de justificativa esteja marcada
     const handleJustificativaToggle = (tipo) => {
         if (tipo === 'custom') {
             const novo = !isCustomChecked
-            if (!novo && !isPredefinidaChecked) return // bloqueia desmarcar ambas
+            if (!novo && !isPredefinidaChecked) return
             setFiltro('is_custom', novo)
         } else {
             const novo = !isPredefinidaChecked
-            if (!novo && !isCustomChecked) return // bloqueia desmarcar ambas
+            if (!novo && !isCustomChecked) return
             setFiltro('is_predefinida', novo)
         }
     }
@@ -91,11 +99,8 @@ export default function ListagemLancamentos() {
             if (filtros.professor_id) params.append('professor_id', filtros.professor_id)
             if (filtros.data_inicio) params.append('data_inicio', filtros.data_inicio)
             if (filtros.data_fim) params.append('data_fim', filtros.data_fim)
-            
-            const endpoint = `/export/lancamentos?${params.toString()}`
-            await downloadBlobFromApi(endpoint, 'lancamentos.csv')
-        } catch (error) {
-            console.error('Erro ao exportar', error)
+            await downloadBlobFromApi(`/export/lancamentos?${params.toString()}`, 'lancamentos.csv')
+        } catch {
             alert('Não foi possível gerar a exportação.')
         } finally {
             setIsExporting(false)
@@ -109,7 +114,7 @@ export default function ListagemLancamentos() {
                 <div className="flex items-center gap-3">
                     <ClipboardList size={22} className="text-primary-400" />
                     <h1 className="text-2xl font-display font-bold text-white">
-                        Listagem de Lancamentos
+                        Listagem de Lançamentos
                     </h1>
                 </div>
                 <div className="flex items-center gap-2">
@@ -146,9 +151,7 @@ export default function ListagemLancamentos() {
                             >
                                 <option value="">Todas</option>
                                 {casas.map((c) => (
-                                    <option key={c.id} value={c.id}>
-                                        {c.nome}
-                                    </option>
+                                    <option key={c.id} value={c.id}>{c.nome}</option>
                                 ))}
                             </select>
                         </div>
@@ -164,9 +167,7 @@ export default function ListagemLancamentos() {
                             >
                                 <option value="">Todos</option>
                                 {professores.map((p) => (
-                                    <option key={p.id} value={p.id}>
-                                        {p.nome}
-                                    </option>
+                                    <option key={p.id} value={p.id}>{p.nome}</option>
                                 ))}
                             </select>
                         </div>
@@ -251,18 +252,11 @@ export default function ListagemLancamentos() {
                     <div className="text-2xl font-display font-bold text-primary-400">
                         {lancamentos.length}
                     </div>
-                    <div className="text-xs text-gray-500 mt-0.5">Lancamentos</div>
+                    <div className="text-xs text-gray-500 mt-0.5">Lançamentos</div>
                 </div>
-                <div
-                    className={`card border text-center ${total >= 0 ? 'border-green-500/30' : 'border-red-500/30'
-                        }`}
-                >
-                    <div
-                        className={`text-2xl font-display font-bold ${total >= 0 ? 'text-green-400' : 'text-red-400'
-                            }`}
-                    >
-                        {total > 0 ? '+' : ''}
-                        {total}
+                <div className={`card border text-center ${total >= 0 ? 'border-green-500/30' : 'border-red-500/30'}`}>
+                    <div className={`text-2xl font-display font-bold ${total >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {total > 0 ? '+' : ''}{total}
                     </div>
                     <div className="text-xs text-gray-500 mt-0.5">Pontos no filtro</div>
                 </div>
@@ -276,48 +270,102 @@ export default function ListagemLancamentos() {
             ) : lancamentos.length === 0 ? (
                 <div className="card text-center py-12 text-gray-500 border border-background-600">
                     <ClipboardList size={36} className="mx-auto mb-3 opacity-30" />
-                    <p>Nenhum lancamento encontrado.</p>
+                    <p>Nenhum lançamento encontrado.</p>
                 </div>
             ) : (
                 <div className="space-y-2">
-                    {lancamentos.map((l) => (
-                        <div
-                            key={l.id}
-                            className="card border border-background-600 flex items-start gap-3"
-                        >
+                    {lancamentos.map((l) => {
+                        const temPermissao = podeDeletar(l)
+                        const estaDeletando = deletando === l.id
+                        return (
                             <div
-                                className={`flex-shrink-0 w-14 text-center font-display font-bold text-lg rounded-lg py-1 ${l.pontuacao > 0
-                                    ? 'bg-green-500/10 text-green-400'
-                                    : 'bg-red-500/10 text-red-400'
-                                    }`}
+                                key={l.id}
+                                className="card border border-background-600 flex items-start gap-3"
                             >
-                                {l.pontuacao > 0 ? '+' : ''}
-                                {l.pontuacao}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="font-semibold text-white text-sm truncate">
-                                    {l.justificativa_snapshot}
-                                </p>
-                                <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-xs text-gray-500">
-                                    <span>
-                                        {l.casa_nome}
-                                    </span>
-                                    {l.turma_nome && <span>{l.turma_nome}</span>}
-                                    {l.aluno_nome && <span>{l.aluno_nome}</span>}
-                                    <span className="text-gray-600">
-                                        por {l.professor_nome}
-                                    </span>
-                                    <span>{formatDate(l.data_lancamento)}</span>
+                                {/* Pontuação */}
+                                <div
+                                    className={`flex-shrink-0 w-14 text-center font-display font-bold text-lg rounded-lg py-1 ${l.pontuacao > 0
+                                        ? 'bg-green-500/10 text-green-400'
+                                        : 'bg-red-500/10 text-red-400'
+                                        }`}
+                                >
+                                    {l.pontuacao > 0 ? '+' : ''}{l.pontuacao}
                                 </div>
-                                {l.is_custom && (
-                                    <span className="inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded bg-primary-900/30 text-primary-400 border border-primary-700/30">
-                                        Customizada
-                                    </span>
+
+                                {/* Conteúdo */}
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-white text-sm truncate">
+                                        {l.justificativa_snapshot}
+                                    </p>
+                                    <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-xs text-gray-500">
+                                        <span>{l.casa_nome}</span>
+                                        {l.turma_nome && <span>{l.turma_nome}</span>}
+                                        {l.aluno_nome && <span>{l.aluno_nome}</span>}
+                                        <span className="text-gray-600">por {l.professor_nome}</span>
+                                        <span>{formatDate(l.data_lancamento)}</span>
+                                    </div>
+                                    {l.is_custom && (
+                                        <span className="inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded bg-primary-900/30 text-primary-400 border border-primary-700/30">
+                                            Customizada
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* Botão excluir — visível apenas para quem tem permissão */}
+                                {temPermissao && (
+                                    <button
+                                        onClick={() => pedirExclusao(l)}
+                                        title="Excluir lançamento"
+                                        className="flex-shrink-0 p-1.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-900/20 transition-colors"
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
                                 )}
                             </div>
-                        </div>
-                    ))}
+                        )
+                    })}
                 </div>
+            )}
+
+            {/* Modal de confirmacao de exclusao — mesmo padrao do CrudTable */}
+            {modalExclusao.aberto && modalExclusao.lancamento && (
+                <Modal title="Confirmar Exclusão" onClose={cancelarExclusao}>
+                    <div className="flex flex-col items-center gap-4 py-4 text-center">
+                        <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center text-red-400">
+                            <AlertTriangle size={24} />
+                        </div>
+                        <div>
+                            <p className="text-gray-300">
+                                Tem certeza que deseja excluir o lançamento{' '}
+                                <strong>"{modalExclusao.lancamento.justificativa_snapshot}"</strong>?
+                            </p>
+                            <p className="text-sm text-gray-500 mt-1">
+                                por {modalExclusao.lancamento.professor_nome} — Essa ação não poderá ser desfeita.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex gap-2 pt-4 border-t border-background-600">
+                        <button
+                            onClick={cancelarExclusao}
+                            disabled={deletando}
+                            className="btn-secondary flex-1 disabled:opacity-50"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            onClick={confirmarExclusao}
+                            disabled={deletando}
+                            className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg font-bold transition-colors flex-1 shadow-md shadow-red-500/20 disabled:opacity-60 flex items-center justify-center gap-2"
+                        >
+                            {deletando ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    Excluindo...
+                                </>
+                            ) : 'Excluir'}
+                        </button>
+                    </div>
+                </Modal>
             )}
         </div>
     )

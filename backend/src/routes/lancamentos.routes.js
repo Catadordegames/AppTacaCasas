@@ -8,6 +8,7 @@ const { autenticar } = require('../middlewares/auth.middleware');
 router.get('/', autenticar, LancamentosController.listar);
 router.get('/:id', autenticar, LancamentosController.buscarPorId);
 router.post('/', autenticar, LancamentosController.criar);
+router.put('/:id', autenticar, LancamentosController.atualizar);
 router.delete('/:id', autenticar, LancamentosController.deletar);
 
 module.exports = router;

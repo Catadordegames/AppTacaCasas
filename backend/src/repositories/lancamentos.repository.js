@@ -87,6 +87,15 @@ const LancamentosRepository = {
     return result.insertId;
   },
 
+  async atualizar(id, dados) {
+    const { pontuacao, justificativa_snapshot } = dados;
+    const [result] = await db.query(
+      'UPDATE lancamentos SET pontuacao = ?, justificativa_snapshot = ? WHERE id = ?',
+      [pontuacao, justificativa_snapshot, id]
+    );
+    return result.affectedRows > 0;
+  },
+
   async deletar(id) {
     const [result] = await db.query('DELETE FROM lancamentos WHERE id = ?', [id]);
     return result.affectedRows > 0;

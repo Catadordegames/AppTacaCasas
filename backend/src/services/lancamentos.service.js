@@ -15,13 +15,10 @@ const JustificativasRepository = require('../repositories/justificativas.reposit
 const LancamentosService = {
   /**
    * Lista lançamentos.
-   * Professor (permissao=2) vê apenas os seus.
-   * Admin (permissao=1) vê todos.
+   * Todos os usuários autenticados veem todos os lançamentos.
+   * Filtros por professor, casa, data etc. continuam disponíveis via query params.
    */
   async listar(usuario, filtros = {}) {
-    if (usuario.permissao === 2) {
-      filtros.professor_id = usuario.id;
-    }
     return LancamentosRepository.listar(filtros);
   },
 
@@ -121,6 +118,31 @@ const LancamentosService = {
     };
 
     const id = await LancamentosRepository.criar(dados);
+    return LancamentosRepository.buscarPorId(id);
+  },
+
+  /**
+   * Atualiza um lançamento (pontuação e justificativa).
+   * Regra: professor só pode editar os seus. Admin pode tudo.
+   */
+  async atualizar(id, usuario, body) {
+    const lancamento = await this.buscarPorId(id);
+
+    if (usuario.permissao !== 1 && lancamento.professor_id !== usuario.id) {
+      const e = new Error('Você não tem permissão para editar este lançamento.');
+      e.status = 403; throw e;
+    }
+
+    const { pontuacao, justificativa_snapshot } = body;
+    if (pontuacao === undefined && !justificativa_snapshot) {
+      const e = new Error('Informe ao menos pontuação ou justificativa para atualizar.');
+      e.status = 400; throw e;
+    }
+
+    await LancamentosRepository.atualizar(id, {
+      pontuacao: pontuacao !== undefined ? Number(pontuacao) : lancamento.pontuacao,
+      justificativa_snapshot: justificativa_snapshot || lancamento.justificativa_snapshot,
+    });
     return LancamentosRepository.buscarPorId(id);
   },
 

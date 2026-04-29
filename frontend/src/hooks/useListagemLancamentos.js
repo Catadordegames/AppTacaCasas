@@ -1,12 +1,18 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import toast from 'react-hot-toast'
 import api from '../services/api'
+import { useAuth } from '../context/AuthContext'
 
 export default function useListagemLancamentos() {
+    const { usuario } = useAuth()
     const [lancamentos, setLancamentos] = useState([])
     const [casas, setCasas] = useState([])
     const [professores, setProfessores] = useState([])
     const [loading, setLoading] = useState(true)
+    const [deletando, setDeletando] = useState(false)
+
+    // Modal de confirmação de exclusão
+    const [modalExclusao, setModalExclusao] = useState({ aberto: false, lancamento: null })
 
     const [filtros, setFiltros] = useState({
         casa_id: '',
@@ -27,7 +33,6 @@ export default function useListagemLancamentos() {
         if (filtros.professor_id) params.append('professor_id', filtros.professor_id)
         if (filtros.data_inicio) params.append('data_inicio', filtros.data_inicio)
         if (filtros.data_fim) params.append('data_fim', filtros.data_fim)
-        // Apenas envia is_custom se somente um tipo estiver selecionado
         if (filtros.is_custom && !filtros.is_predefinida) {
             params.append('is_custom', 'true')
         } else if (!filtros.is_custom && filtros.is_predefinida) {
@@ -49,7 +54,7 @@ export default function useListagemLancamentos() {
             setCasas(c.data)
             setProfessores(p.data)
         } catch {
-            toast.error('Erro ao carregar lancamentos.')
+            toast.error('Erro ao carregar lançamentos.')
         } finally {
             setLoading(false)
         }
@@ -64,14 +69,52 @@ export default function useListagemLancamentos() {
         [lancamentos]
     )
 
+    // Permissão: admin (permissao=1) ou autor do lançamento
+    const podeDeletar = useCallback((lancamento) =>
+        usuario?.permissao === 1 || lancamento.professor_id === usuario?.id,
+        [usuario]
+    )
+
+    // Abre o modal de confirmação
+    const pedirExclusao = useCallback((lancamento) => {
+        setModalExclusao({ aberto: true, lancamento })
+    }, [])
+
+    const cancelarExclusao = useCallback(() => {
+        if (!deletando) setModalExclusao({ aberto: false, lancamento: null })
+    }, [deletando])
+
+    // Executa a exclusão após confirmação no modal
+    const confirmarExclusao = useCallback(async () => {
+        const lancamento = modalExclusao.lancamento
+        if (!lancamento) return
+        try {
+            setDeletando(true)
+            await api.delete(`/lancamentos/${lancamento.id}`)
+            setLancamentos((prev) => prev.filter((l) => l.id !== lancamento.id))
+            toast.success('Lançamento removido.')
+            setModalExclusao({ aberto: false, lancamento: null })
+        } catch (err) {
+            toast.error(err.response?.data?.error || 'Erro ao remover lançamento.')
+        } finally {
+            setDeletando(false)
+        }
+    }, [modalExclusao.lancamento])
+
     return {
         lancamentos,
         casas,
         professores,
         loading,
+        deletando,
         filtros,
         setFiltro,
         carregar,
         total,
+        podeDeletar,
+        modalExclusao,
+        pedirExclusao,
+        cancelarExclusao,
+        confirmarExclusao,
     }
 }

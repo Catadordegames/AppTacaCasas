@@ -6,12 +6,13 @@
 // ============================================================
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Plus, Save, Pencil, Trash2, Users, School, BookOpen, ClipboardList, AlertCircle } from 'lucide-react'
+import { Plus, Save, Pencil, Trash2, Users, School, BookOpen, ClipboardList, AlertCircle, AlertTriangle } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 import api from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Select, PasswordRequirements, LoadingSpinner } from '../../components/ui'
+import Modal from '../../components/ui/Modal'
 import { validarSenha } from '../../utils/password'
 
 // ── Configuracao de metadados por tabela ──────────────────────
@@ -92,6 +93,8 @@ export default function CadastroRapido() {
     const [salvando, setSalvando] = useState(false)
     const [opcoesFk, setOpcoesFk] = useState({})
     const [carregandoFk, setCarregandoFk] = useState(false)
+    // Modal de aviso ao trocar de tabela com rascunho não salvo
+    const [modalTrocar, setModalTrocar] = useState({ aberto: false, proximaTabela: '' })
 
     const config = tabelaAtiva ? CONFIG_TABELAS[tabelaAtiva] : null
 
@@ -214,11 +217,21 @@ export default function CadastroRapido() {
 
     const handleTrocarTabela = useCallback((valor) => {
         if (rascunho.length > 0 && valor !== tabelaAtiva) {
-            if (!confirm('Trocar de tabela limpara a lista atual. Deseja continuar?')) return
-            setRascunho([])
+            setModalTrocar({ aberto: true, proximaTabela: valor })
+            return
         }
         setTabelaAtiva(valor)
     }, [rascunho, tabelaAtiva])
+
+    const confirmarTrocaTabela = useCallback(() => {
+        setRascunho([])
+        setTabelaAtiva(modalTrocar.proximaTabela)
+        setModalTrocar({ aberto: false, proximaTabela: '' })
+    }, [modalTrocar.proximaTabela])
+
+    const cancelarTrocaTabela = useCallback(() => {
+        setModalTrocar({ aberto: false, proximaTabela: '' })
+    }, [])
 
     // ── Renderizacao dos campos do formulario ───────────────────
 
@@ -397,6 +410,37 @@ export default function CadastroRapido() {
                     <p className="text-xs mt-1">Os itens aparecerão aqui antes de serem salvos.</p>
                 </div>
             )}
+
+            {/* Modal de aviso: dados nao salvos ao trocar de tabela */}
+            {modalTrocar.aberto && (
+                <Modal title="Dados não salvos" onClose={cancelarTrocaTabela}>
+                    <div className="flex flex-col items-center gap-4 py-4 text-center">
+                        <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400">
+                            <AlertTriangle size={24} />
+                        </div>
+                        <div>
+                            <p className="text-gray-300">
+                                Você tem <strong>{rascunho.length} item{rascunho.length !== 1 ? 's' : ''}</strong> na lista de rascunho que ainda não foram salvos.
+                            </p>
+                            <p className="text-sm text-gray-500 mt-1">
+                                Se trocar de tabela agora, esses dados serão perdidos e não poderão ser recuperados.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex gap-2 pt-4 border-t border-background-600">
+                        <button onClick={cancelarTrocaTabela} className="btn-secondary flex-1">
+                            Cancelar
+                        </button>
+                        <button
+                            onClick={confirmarTrocaTabela}
+                            className="bg-amber-500 hover:bg-amber-600 text-white py-2 px-4 rounded-lg font-bold transition-colors flex-1 shadow-md shadow-amber-500/20"
+                        >
+                            Trocar e Perder Dados
+                        </button>
+                    </div>
+                </Modal>
+            )}
         </div>
     )
 }
+
