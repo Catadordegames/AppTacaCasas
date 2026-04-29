@@ -18,7 +18,8 @@ const CasasController = {
   async criar(req, res, next) {
     try {
       const { nome, brasao } = req.body;
-      const nova = await CasasService.criar(nome, brasao);
+      const novoBrasao = req.file ? `/api/uploads/brasoes/${req.file.filename}` : brasao;
+      const nova = await CasasService.criar(nome, novoBrasao);
       res.status(201).json(nova);
     } catch (err) { next(err); }
   },
@@ -26,7 +27,8 @@ const CasasController = {
   async atualizar(req, res, next) {
     try {
       const { nome, brasao } = req.body;
-      const atualizada = await CasasService.atualizar(req.params.id, nome, brasao);
+      const novoBrasao = req.file ? `/api/uploads/brasoes/${req.file.filename}` : brasao;
+      const atualizada = await CasasService.atualizar(req.params.id, nome, novoBrasao);
       res.json(atualizada);
     } catch (err) { next(err); }
   },

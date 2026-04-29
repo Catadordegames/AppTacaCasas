@@ -160,7 +160,7 @@ export default function useLancarPontos() {
   const casaOptions = useMemo(() =>
     casas.map((c) => ({
       value: c.id,
-      label: `${c.brasao} ${c.nome}`,
+      label: c.nome,
     })),
     [casas]
   )

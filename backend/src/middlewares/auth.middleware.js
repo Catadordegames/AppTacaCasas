@@ -40,7 +40,7 @@ const autenticar = (req, res, next) => {
  */
 const apenasAdmin = (req, res, next) => {
   if (req.usuario.permissao !== 1) {
-    return res.status(403).json({ error: 'Acesso restrito à coordenação/diretoria.' });
+    return res.status(403).json({ error: 'Acesso restrito à gestão da escola/diretoria.' });
   }
   next();
 };

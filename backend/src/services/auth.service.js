@@ -35,6 +35,7 @@ const AuthService = {
         nome: professor.nome,
         permissao: professor.permissao,
         casa_id: professor.casa_id,
+        senha_alterada: professor.senha_alterada,
       },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
@@ -47,6 +48,9 @@ const AuthService = {
         nome: professor.nome,
         permissao: professor.permissao,
         casa_id: professor.casa_id,
+        senha_alterada: professor.senha_alterada,
+        email: professor.email,
+        telefone: professor.telefone,
       },
     };
   },

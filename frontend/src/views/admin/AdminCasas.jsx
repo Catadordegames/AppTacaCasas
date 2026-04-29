@@ -1,51 +1,37 @@
 // ============================================================
 // pages/admin/AdminCasas.jsx
 // CRUD completo de Casas (Equipes).
-// Padrão que todas as outras páginas admin seguem:
-// 1. carregar() — busca do backend
-// 2. Modal de criação/edição com form controlado
-// 3. handleSalvar() — POST ou PUT dependendo de `editando`
-// 4. handleDeletar() — DELETE com confirmação
 // ============================================================
 
-import { useState, useEffect } from 'react'
 import { Plus, Shield } from 'lucide-react'
-import { useCrud } from '../../hooks/useCrud'
-import toast from 'react-hot-toast'
 import CrudTable from '../../components/ui/CrudTable'
 import Modal from '../../components/ui/Modal'
-
-const FORM_VAZIO = { nome: '', brasao: '' }
+import useAdminCasas from '../../hooks/useAdminCasas'
 
 export default function AdminCasas() {
-  const { data: casas, loading, loadingSave: salvando, loadingDelete: deletando, load, save, remove } = useCrud('/casas', 'Casa')
-
-  const [modalAberto, setModalAberto] = useState(false)
-  const [editando, setEditando] = useState(null)
-  const [form, setForm] = useState(FORM_VAZIO)
-
-  useEffect(() => { load() }, [load])
-
-  const abrirCriar = () => { setEditando(null); setForm(FORM_VAZIO); setModalAberto(true) }
-  const abrirEditar = (casa) => { setEditando(casa); setForm({ nome: casa.nome, brasao: casa.brasao }); setModalAberto(true) }
-  const fecharModal = () => { setModalAberto(false); setEditando(null); setForm(FORM_VAZIO) }
-
-  const handleSalvar = async (e) => {
-    e.preventDefault()
-    if (!form.nome.trim() || !form.brasao.trim()) { toast.error('Preencha todos os campos.'); return }
-    try {
-      await save(form, editando?.id)
-      fecharModal()
-    } catch {} // handled in hook
-  }
-
-  const handleDeletar = async (casa) => {
-    if (!confirm(`Deletar "${casa.nome}"? Esta ação não pode ser desfeita.`)) return
-    await remove(casa.id)
-  }
+  const { casas, loading, salvando, deletando, modalAberto, editando, form, setForm, abrirCriar, abrirEditar, fecharModal, handleSalvar, handleDeletar } = useAdminCasas()
 
   const columns = [
-    { key: 'brasao', label: 'Brasão', render: (v) => <span className="text-2xl">{v}</span> },
+    { 
+      key: 'brasao', 
+      label: 'Brasão', 
+      render: (v) => v?.startsWith('/api/uploads') ? (
+        <div className="relative w-16 h-16 md:w-20 md:h-20 flex items-center justify-center group cursor-default">
+          <div className="absolute inset-0 bg-white/10 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <img 
+            src={v} 
+            alt="Brasão" 
+            className="w-full h-full object-contain relative z-10 transition-transform duration-300 group-hover:scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.1)] group-hover:drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]" 
+          />
+        </div>
+      ) : (
+        <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center group cursor-default">
+          <span className="text-4xl md:text-5xl transition-transform duration-300 group-hover:scale-110 drop-shadow-md">
+            {v}
+          </span>
+        </div>
+      )
+    },
     { key: 'nome',   label: 'Nome'   },
   ]
 
@@ -82,10 +68,29 @@ export default function AdminCasas() {
                 onChange={(e) => setForm({ ...form, nome: e.target.value })} required />
             </div>
             <div>
-              <label className="label">Brasão (emoji ou URL) *</label>
-              <input className="input" placeholder="Ex: 🦁" value={form.brasao}
-                onChange={(e) => setForm({ ...form, brasao: e.target.value })} required />
-              {form.brasao && <div className="text-center text-4xl mt-2">{form.brasao}</div>}
+              <label className="label">Brasão (Imagem .png)</label>
+              <input type="file" className="input p-2" accept=".png, image/png"
+                onChange={(e) => setForm({ ...form, arquivoBrasao: e.target.files[0] })} />
+            </div>
+            <div>
+              <label className="label">Ou Brasão Alternativo (emoji)</label>
+              <input 
+                className="input" 
+                placeholder="Ex: 🦁" 
+                value={form.brasao?.startsWith('/api/') ? '' : form.brasao}
+                onChange={(e) => setForm({ ...form, brasao: e.target.value })} 
+              />
+              
+              {/* Preview Inteligente */}
+              {form.brasao && !form.arquivoBrasao && (
+                <div className="flex justify-center mt-4 bg-background-700/50 p-4 rounded-xl border border-background-600">
+                  {form.brasao.startsWith('/api/') ? (
+                     <img src={form.brasao} alt="Preview do Brasão" className="w-16 h-16 object-contain drop-shadow-md" />
+                  ) : (
+                     <div className="text-center text-5xl drop-shadow-md">{form.brasao}</div>
+                  )}
+                </div>
+              )}
             </div>
             <div className="flex gap-2 pt-2">
               <button type="button" onClick={fecharModal} className="btn-secondary flex-1">Cancelar</button>

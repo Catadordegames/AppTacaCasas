@@ -13,19 +13,29 @@
 // ============================================================
 
 import { useState } from 'react'
-import { Pencil, Trash2, Search } from 'lucide-react'
+import { Pencil, Trash2, Search, AlertTriangle } from 'lucide-react'
+import Modal from './Modal'
 
 export default function CrudTable({
   columns = [],
   data = [],
   onEdit,
   onDelete,
+  canDelete = () => true,
   loading = false,
   searchPlaceholder = 'Buscar...',
   searchKey = 'nome',
   deletando = null,
 }) {
   const [busca, setBusca] = useState('')
+  const [itemToDelete, setItemToDelete] = useState(null)
+
+  const handleConfirmDelete = () => {
+    if (itemToDelete) {
+      onDelete(itemToDelete)
+      setItemToDelete(null)
+    }
+  }
 
   const filtrado = busca.trim()
     ? data.filter((row) =>
@@ -100,10 +110,14 @@ export default function CrudTable({
                         )}
                         {onDelete && (
                           <button
-                            onClick={() => onDelete(row)}
-                            disabled={deletando === row.id}
-                            className="text-gray-500 hover:text-red-400 transition-colors p-1 disabled:opacity-40"
-                            title="Deletar"
+                            onClick={() => setItemToDelete(row)}
+                            disabled={deletando === row.id || !canDelete(row)}
+                            className={`p-1 transition-colors ${
+                              !canDelete(row) || deletando === row.id
+                                ? 'text-gray-700 cursor-not-allowed opacity-50' 
+                                : 'text-gray-500 hover:text-red-400'
+                            }`}
+                            title={!canDelete(row) ? 'Não é possível deletar' : 'Deletar'}
                           >
                             {deletando === row.id
                               ? <div className="w-4 h-4 border border-red-400 border-t-transparent rounded-full animate-spin" />
@@ -124,6 +138,31 @@ export default function CrudTable({
       <p className="text-xs text-gray-600 text-right">
         {filtrado.length} de {data.length} registro{data.length !== 1 ? 's' : ''}
       </p>
+
+      {/* Modal de Confirmação de Deleção */}
+      {itemToDelete && (
+        <Modal title="Confirmar Exclusão" onClose={() => setItemToDelete(null)}>
+          <div className="flex flex-col items-center gap-4 py-4 text-center">
+            <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center text-red-400">
+              <AlertTriangle size={24} />
+            </div>
+            <div>
+              <p className="text-gray-300">
+                Tem certeza que deseja deletar <strong>{itemToDelete[searchKey] || 'este item'}</strong>?
+              </p>
+              <p className="text-sm text-gray-500 mt-1">Essa ação não poderá ser desfeita.</p>
+            </div>
+          </div>
+          <div className="flex gap-2 pt-4 border-t border-background-600">
+            <button onClick={() => setItemToDelete(null)} className="btn-secondary flex-1">
+              Cancelar
+            </button>
+            <button onClick={handleConfirmDelete} className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg font-bold transition-colors flex-1 shadow-md shadow-red-500/20">
+              Deletar
+            </button>
+          </div>
+        </Modal>
+      )}
     </div>
   )
 }

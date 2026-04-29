@@ -3,7 +3,6 @@
 // View de listagem de lancamentos com filtros avancados.
 // ============================================================
 
-import { useState, useMemo } from 'react'
 import {
     ClipboardList,
     Filter,
@@ -13,8 +12,11 @@ import {
     Home,
     CheckSquare,
     Square,
+    Download
 } from 'lucide-react'
 import useListagemLancamentos from '../../hooks/useListagemLancamentos'
+import { downloadBlobFromApi } from '../../utils/downloadHelper'
+import { useState, useMemo } from 'react'
 
 function formatDate(dt) {
     return new Date(dt).toLocaleString('pt-BR', {
@@ -34,7 +36,7 @@ export default function ListagemLancamentos() {
         total,
     } = useListagemLancamentos()
 
-    const [mostrarFiltros, setMostrarFiltros] = useState(false)
+    const [mostrarFiltros, setMostrarFiltros] = useState(true)
 
     const toggleFiltros = () => setMostrarFiltros((v) => !v)
 
@@ -80,6 +82,26 @@ export default function ListagemLancamentos() {
         setFiltro('is_predefinida', true)
     }
 
+    const [isExporting, setIsExporting] = useState(false)
+    const handleExportar = async () => {
+        setIsExporting(true)
+        try {
+            const params = new URLSearchParams()
+            if (filtros.casa_id) params.append('casa_id', filtros.casa_id)
+            if (filtros.professor_id) params.append('professor_id', filtros.professor_id)
+            if (filtros.data_inicio) params.append('data_inicio', filtros.data_inicio)
+            if (filtros.data_fim) params.append('data_fim', filtros.data_fim)
+            
+            const endpoint = `/export/lancamentos?${params.toString()}`
+            await downloadBlobFromApi(endpoint, 'lancamentos.csv')
+        } catch (error) {
+            console.error('Erro ao exportar', error)
+            alert('Não foi possível gerar a exportação.')
+        } finally {
+            setIsExporting(false)
+        }
+    }
+
     return (
         <div className="space-y-4">
             {/* Cabecalho */}
@@ -90,13 +112,23 @@ export default function ListagemLancamentos() {
                         Listagem de Lancamentos
                     </h1>
                 </div>
-                <button
-                    onClick={toggleFiltros}
-                    className="btn-secondary flex items-center gap-1.5 text-sm py-1.5"
-                >
-                    {mostrarFiltros ? <X size={14} /> : <Filter size={14} />}
-                    {mostrarFiltros ? 'Ocultar Filtros' : 'Filtros'}
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={handleExportar}
+                        disabled={isExporting}
+                        className="btn-primary flex items-center gap-1.5 text-sm py-1.5 bg-green-600 hover:bg-green-500 border-none"
+                    >
+                        <Download size={14} />
+                        {isExporting ? 'Exportando...' : 'Exportar CSV'}
+                    </button>
+                    <button
+                        onClick={toggleFiltros}
+                        className="btn-secondary flex items-center gap-1.5 text-sm py-1.5"
+                    >
+                        {mostrarFiltros ? <X size={14} /> : <Filter size={14} />}
+                        {mostrarFiltros ? 'Ocultar Filtros' : 'Filtros'}
+                    </button>
+                </div>
             </div>
 
             {/* Painel de filtros */}
@@ -115,7 +147,7 @@ export default function ListagemLancamentos() {
                                 <option value="">Todas</option>
                                 {casas.map((c) => (
                                     <option key={c.id} value={c.id}>
-                                        {c.brasao} {c.nome}
+                                        {c.nome}
                                     </option>
                                 ))}
                             </select>

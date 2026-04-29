@@ -24,8 +24,8 @@ const ProfessoresService = {
   },
 
   async criar(nome, senha, permissao, casa_id) {
-    if (!nome || !senha || permissao === undefined || !casa_id) {
-      const e = new Error('Nome, senha, permissão e casa são obrigatórios.');
+    if (!nome || !senha || permissao === undefined) {
+      const e = new Error('Nome, senha e permissão são obrigatórios.');
       e.status = 400;
       throw e;
     }

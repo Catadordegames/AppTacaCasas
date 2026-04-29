@@ -25,6 +25,7 @@ export default function Input({
     required = false,
     className,
     labelClassName,
+    preventSuggest = false,
     ...props
 }) {
     return (
@@ -49,6 +50,13 @@ export default function Input({
                         error && 'border-red-500 focus:border-red-500 focus:ring-red-500/50',
                         className
                     )}
+                    readOnly={preventSuggest ? true : props.readOnly}
+                    onFocus={(e) => {
+                        if (preventSuggest) {
+                            e.target.removeAttribute('readonly');
+                        }
+                        if (props.onFocus) props.onFocus(e);
+                    }}
                     {...props}
                 />
                 {rightIcon && (

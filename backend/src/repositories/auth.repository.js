@@ -14,6 +14,16 @@ const AuthRepository = {
   async buscarPorNome(nome) {
     const [rows] = await pool.query('SELECT * FROM professores WHERE nome = ?', [nome]);
     return rows.length > 0 ? rows[0] : null;
+  },
+
+  /**
+   * Busca um professor/admin pelo ID
+   * @param {number} id
+   * @returns {Promise<Object|null>}
+   */
+  async buscarPorId(id) {
+    const [rows] = await pool.query('SELECT * FROM professores WHERE id = ?', [id]);
+    return rows.length > 0 ? rows[0] : null;
   }
 };
 

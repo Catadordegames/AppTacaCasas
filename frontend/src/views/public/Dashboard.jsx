@@ -136,20 +136,33 @@ function RankingItem({ casa, index, maxPontos, usuario, mostrarPontos }) {
     <Card
       className={cn(
         style.bg,
-        'transition-all duration-300 hover:scale-[1.01]'
+        'transition-all duration-300 hover:scale-[1.01] group py-4'
       )}
       border
       borderClass={style.border}
     >
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 md:gap-6">
         {/* Posicao / medalha */}
         <MedalBadge index={index} style={style} />
 
         {/* Brasao + Nome */}
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <span className="text-3xl leading-none">{casa.brasao}</span>
+        <div className="flex items-center gap-4 md:gap-6 flex-1 min-w-0">
+          {casa.brasao?.startsWith('/api/uploads') ? (
+            <div className="relative w-24 h-24 md:w-32 md:h-32 flex-shrink-0 flex items-center justify-center">
+              <div className="absolute inset-0 bg-white/10 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <img 
+                src={casa.brasao} 
+                alt={casa.nome} 
+                className="w-full h-full object-contain relative z-10 transition-transform duration-500 group-hover:scale-110 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] group-hover:drop-shadow-[0_0_25px_rgba(255,255,255,0.25)]" 
+              />
+            </div>
+          ) : (
+            <span className="text-6xl md:text-7xl leading-none drop-shadow-lg flex-shrink-0 text-center w-24 md:w-32 transition-transform duration-500 group-hover:scale-110">
+              {casa.brasao}
+            </span>
+          )}
           <div className="flex-1 min-w-0">
-            <h2 className="font-display font-bold text-white text-lg leading-tight truncate">
+            <h2 className="font-display font-bold text-white text-2xl md:text-4xl leading-tight truncate">
               {casa.nome}
             </h2>
           </div>
@@ -175,13 +188,13 @@ function MedalBadge({ index, style }) {
   const isNumeric = typeof style.medal === 'string' && style.medal.includes('o')
 
   return (
-    <div className="text-2xl w-10 text-center flex-shrink-0">
+    <div className="text-3xl md:text-5xl w-12 md:w-16 text-center flex-shrink-0">
       {isNumeric ? (
-        <span className={cn('font-display font-bold text-lg', style.text)}>
+        <span className={cn('font-display font-bold text-2xl md:text-3xl', style.text)}>
           {style.medal}
         </span>
       ) : (
-        style.medal
+        <span className="drop-shadow-lg">{style.medal}</span>
       )}
     </div>
   )
