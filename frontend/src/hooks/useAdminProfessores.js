@@ -4,7 +4,8 @@ import { useFetch } from './useFetch'
 import toast from 'react-hot-toast'
 import { validarSenha } from '../utils/password'
 
-const FORM_VAZIO = { nome: '', senha: '', permissao: 2, casa_id: '' }
+// permissao: '2' = Professor (padrão ao criar). ADMIN = 1, PROFESSOR = 2.
+const FORM_VAZIO = { nome: '', senha: '', permissao: '2', casa_id: '' }
 
 export default function useAdminProfessores() {
   const { data: professores, loading, loadingSave: salvando, loadingDelete: deletando, load, save, remove } = useCrud('/professores', 'Professor')

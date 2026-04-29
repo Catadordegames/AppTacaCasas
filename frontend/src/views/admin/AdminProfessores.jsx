@@ -16,8 +16,8 @@ export default function AdminProfessores() {
     { key: 'casa_nome', label: 'Casa', render: (v) => v || <span className="text-gray-500 italic">Sem Casa</span> },
     {
       key: 'permissao', label: 'Perfil', render: (v) => (
-        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${v === 2 ? 'bg-purple-900/60 text-purple-300' : 'bg-background-600 text-gray-400'}`}>
-          {v === 2 ? 'ADMIN' : 'Professor'}
+        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${v === 1 ? 'bg-purple-900/60 text-purple-300' : 'bg-background-600 text-gray-400'}`}>
+          {v === 1 ? 'ADMIN' : 'Professor'}
         </span>
       )
     },
@@ -81,8 +81,8 @@ export default function AdminProfessores() {
               <label className="label">Perfil *</label>
               <select className="input" value={form.permissao}
                 onChange={(e) => setForm({ ...form, permissao: e.target.value })}>
-                <option value="1">Professor</option>
-                <option value="2">Gestão da Escola / Admin</option>
+                <option value="1">Coordenação / Admin</option>
+                <option value="2">Professor</option>
               </select>
             </div>
             <div>
