@@ -25,10 +25,11 @@ flowchart TD
 
 - [✅] Leitura do REGRAS.md
 - [✅] Análise do `AdminProfessores.jsx`
-- [✅] Rastreamento da cadeia completa: `useCrud` → `PUT /professores/:id` → controller → service → repository
-- [✅] Diagnóstico do bug
-- [⏳] Aplicação do fix
-- [⏳] Atualização do changelog
+- [✅] Rastreamento da cadeia completa
+- [✅] Git pull revelou lógica extraída para `hooks/useAdminProfessores.js`
+- [✅] Bug encontrado no hook `useAdminProfessores.js` linha 20
+- [✅] Fix aplicado em `useAdminProfessores.js` e `AdminProfessores.jsx`
+- [✅] Changelog atualizado
 
 ---
 

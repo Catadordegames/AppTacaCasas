@@ -17,7 +17,10 @@ export default function useAdminProfessores() {
   useEffect(() => { load() }, [load])
 
   const abrirCriar = () => { setEditando(null); setForm({ ...FORM_VAZIO, casa_id: '' }); setModalAberto(true) }
-  const abrirEditar = (p) => { setEditando(p); setForm({ nome: p.nome, senha: '', permissao: p.permissao, casa_id: p.casa_id || '' }); setModalAberto(true) }
+  // Converte para String(): selects HTML sempre comparam values como string;
+  // sem isso, o React não consegue fazer o match com as <option> se o valor
+  // vier como number do JSON, causando o select não refletir a opção correta.
+  const abrirEditar = (p) => { setEditando(p); setForm({ nome: p.nome, senha: '', permissao: String(p.permissao), casa_id: p.casa_id ? String(p.casa_id) : '' }); setModalAberto(true) }
   const fecharModal = () => { setModalAberto(false); setEditando(null) }
 
   const handleSalvar = async (e) => {

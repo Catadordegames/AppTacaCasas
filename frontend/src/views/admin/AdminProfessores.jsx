@@ -80,9 +80,9 @@ export default function AdminProfessores() {
             <div>
               <label className="label">Perfil *</label>
               <select className="input" value={form.permissao}
-                onChange={(e) => setForm({ ...form, permissao: Number(e.target.value) })}>
-                <option value={1}>Professor</option>
-                <option value={2}>Gestão da Escola / Admin</option>
+                onChange={(e) => setForm({ ...form, permissao: e.target.value })}>
+                <option value="1">Professor</option>
+                <option value="2">Gestão da Escola / Admin</option>
               </select>
             </div>
             <div>
