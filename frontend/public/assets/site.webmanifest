@@ -1,6 +1,7 @@
 {
-  "name": "Taça das Casas",
-  "short_name": "Taça",
+  "name": "Taça das Casas 102 Norte",
+  "short_name": "Taça 102",
+  "description": "Plataforma de gerenciamento da Taça das Casas 102 Norte.",
   "icons": [
     {
       "src": "/assets/web-app-manifest-192x192.png",

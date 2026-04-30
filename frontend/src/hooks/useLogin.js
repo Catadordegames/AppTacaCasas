@@ -8,14 +8,15 @@ export default function useLogin() {
   const { login } = useAuth()
   const navigate = useNavigate()
 
-  const [form, setForm] = useState({ nome: '', senha: '' })
+  const [form, setForm] = useState({ identificador: '', senha: '' })
   const [showSenha, setShowSenha] = useState(false)
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
+  const [senhaKey, setSenhaKey] = useState(0)
 
   const validate = () => {
     const newErrors = {}
-    if (!isRequired(form.nome)) newErrors.nome = 'Campo obrigatório'
+    if (!isRequired(form.identificador)) newErrors.identificador = 'Campo obrigatório'
     if (!isRequired(form.senha)) newErrors.senha = 'Campo obrigatório'
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -34,11 +35,16 @@ export default function useLogin() {
 
     try {
       setLoading(true)
-      await login(form.nome.trim(), form.senha)
+      await login(form.identificador.trim(), form.senha)
       toast.success('Bem-vindo(a)!')
       navigate('/lancar')
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Credenciais inválidas.')
+      const msg = err.response?.data?.error || 'Credenciais inválidas.'
+      toast.error(msg)
+      setErrors({ identificador: msg, senha: msg })
+      // Limpa o campo de senha e forca recriacao do input para evitar salvamento pelo navegador
+      setForm((prev) => ({ ...prev, senha: '' }))
+      setSenhaKey((prev) => prev + 1)
     } finally {
       setLoading(false)
     }
@@ -50,6 +56,7 @@ export default function useLogin() {
     loading,
     showSenha,
     setShowSenha,
+    senhaKey,
     handleChange,
     handleSubmit
   }

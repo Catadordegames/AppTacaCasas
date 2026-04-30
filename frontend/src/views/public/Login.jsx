@@ -8,60 +8,62 @@ import useLogin from '../../hooks/useLogin'
 import { Button, Input, Card, CardHeader, CardTitle, CardContent } from '../../components/ui'
 
 export default function Login() {
-  const { form, errors, loading, showSenha, setShowSenha, handleChange, handleSubmit } = useLogin()
+  const { form, errors, loading, showSenha, setShowSenha, senhaKey, handleChange, handleSubmit } = useLogin()
 
   return (
     <div className="fixed inset-0 bg-background-900 overflow-y-auto">
       <div className="min-h-full flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-sm">
           <LoginLogo />
-        <Card>
-          <CardHeader>
-            <CardTitle>Entrar no Sistema</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <Input
-                label="Nome de usuário"
-                placeholder="Seu nome"
-                value={form.nome}
-                onChange={(e) => handleChange('nome', e.target.value)}
-                leftIcon={<User size={16} />}
-                error={errors.nome}
-                autoComplete="username"
-                disabled={loading}
-              />
-              <Input
-                label="Senha"
-                type={showSenha ? 'text' : 'password'}
-                placeholder="••••••••"
-                value={form.senha}
-                onChange={(e) => handleChange('senha', e.target.value)}
-                leftIcon={<Lock size={16} />}
-                rightIcon={
-                  <button
-                    type="button"
-                    className="text-gray-500 hover:text-gray-300 transition-colors"
-                    onClick={() => setShowSenha(!showSenha)}
-                    tabIndex={-1}
-                  >
-                    {showSenha ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                }
-                error={errors.senha}
-                autoComplete="current-password"
-                disabled={loading}
-              />
-              <Button type="submit" loading={loading} disabled={loading} fullWidth className="mt-2">
-                {loading ? 'Entrando...' : 'Entrar'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-        <p className="text-center text-xs text-gray-600 mt-4">
-          Apenas professores e gestão da escola têm acesso ao sistema.
-        </p>
-      </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Entrar no Sistema</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <Input
+                  label="Usuario ou E-mail"
+                  placeholder="Seu nome ou e-mail"
+                  value={form.identificador}
+                  maxLength={30}
+                  onChange={(e) => handleChange('identificador', e.target.value)}
+                  leftIcon={<User size={16} />}
+                  error={errors.identificador}
+                  autoComplete="username"
+                  disabled={loading}
+                />
+                <Input
+                  key={senhaKey}
+                  label="Senha"
+                  type={showSenha ? 'text' : 'password'}
+                  placeholder="****"
+                  value={form.senha}
+                  onChange={(e) => handleChange('senha', e.target.value)}
+                  leftIcon={<Lock size={16} />}
+                  rightIcon={
+                    <button
+                      type="button"
+                      className="text-gray-500 hover:text-gray-300 transition-colors"
+                      onClick={() => setShowSenha(!showSenha)}
+                      tabIndex={-1}
+                    >
+                      {showSenha ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  }
+                  error={errors.senha}
+                  autoComplete="current-password"
+                  disabled={loading}
+                />
+                <Button type="submit" loading={loading} disabled={loading} fullWidth className="mt-2">
+                  {loading ? 'Entrando...' : 'Entrar'}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+          <p className="text-center text-xs text-gray-600 mt-4">
+            Apenas professores e gestão da escola têm acesso ao sistema.
+          </p>
+        </div>
       </div>
     </div>
   )

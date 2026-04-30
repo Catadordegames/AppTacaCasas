@@ -10,7 +10,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <App />
       <Toaster
-        position="top-right"
+        position="bottom-center"
         toastOptions={{
           style: {
             background: '#1a1a27',
@@ -19,7 +19,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             fontFamily: 'Nunito, sans-serif',
           },
           success: { iconTheme: { primary: '#f59e0b', secondary: '#0a0a0f' } },
-          error:   { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
+          error: { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
         }}
       />
     </BrowserRouter>

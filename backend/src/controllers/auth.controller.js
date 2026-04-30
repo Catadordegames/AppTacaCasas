@@ -9,13 +9,13 @@ const AuthService = require('../services/auth.service');
 const AuthController = {
   async login(req, res, next) {
     try {
-      const { nome, senha } = req.body;
+      const { identificador, senha } = req.body;
 
-      if (!nome || !senha) {
-        return res.status(400).json({ error: 'Nome e senha são obrigatórios.' });
+      if (!identificador || !senha) {
+        return res.status(400).json({ error: 'Usuario e senha sao obrigatorios.' });
       }
 
-      const resultado = await AuthService.login(nome, senha);
+      const resultado = await AuthService.login(identificador, senha);
       res.json(resultado);
     } catch (err) {
       next(err);

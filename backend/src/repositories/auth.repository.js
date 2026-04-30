@@ -17,6 +17,19 @@ const AuthRepository = {
   },
 
   /**
+   * Busca um professor/admin pelo nome ou email para realizar o login
+   * @param {string} identificador
+   * @returns {Promise<Object|null>}
+   */
+  async buscarPorNomeOuEmail(identificador) {
+    const [rows] = await pool.query(
+      'SELECT * FROM professores WHERE nome = ? OR email = ? LIMIT 1',
+      [identificador, identificador]
+    );
+    return rows.length > 0 ? rows[0] : null;
+  },
+
+  /**
    * Busca um professor/admin pelo ID
    * @param {number} id
    * @returns {Promise<Object|null>}
