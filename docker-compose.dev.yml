@@ -1,7 +1,7 @@
 # ============================================================
 # Docker Compose - Ambiente de Desenvolvimento
 # ============================================================
-# Uso: docker-compose -f docker-compose.dev.yml up
+# Uso: docker compose -f docker-compose.dev.yml up
 #
 # Diferencas do ambiente de producao:
 # - Frontend e Backend usam volumes montados para hot-reload
@@ -28,7 +28,7 @@ services:
     networks:
       - app_network_dev
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-root}" ]
       interval: 5s
       timeout: 5s
       retries: 10

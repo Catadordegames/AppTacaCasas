@@ -47,7 +47,7 @@ export default function Login() {
                       onClick={() => setShowSenha(!showSenha)}
                       tabIndex={-1}
                     >
-                      {showSenha ? <EyeOff size={16} /> : <Eye size={16} />}
+                      {showSenha ? <EyeOff size={25} /> : <Eye size={25} />}
                     </button>
                   }
                   error={errors.senha}
