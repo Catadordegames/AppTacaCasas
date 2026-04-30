@@ -20,6 +20,7 @@ import { validarSenha } from '../../utils/password'
 const CONFIG_TABELAS = {
     alunos: {
         nome: 'Alunos',
+        nomeSingular: 'Aluno',
         icone: Users,
         campos: [
             { name: 'nome', label: 'Nome Completo', type: 'text', required: true },
@@ -34,6 +35,7 @@ const CONFIG_TABELAS = {
     },
     professores: {
         nome: 'Professores',
+        nomeSingular: 'Professor',
         icone: School,
         campos: [
             { name: 'nome', label: 'Nome', type: 'text', required: true },
@@ -54,6 +56,7 @@ const CONFIG_TABELAS = {
     },
     turmas: {
         nome: 'Turmas',
+        nomeSingular: 'Turma',
         icone: BookOpen,
         campos: [
             { name: 'nome', label: 'Nome da Turma', type: 'text', required: true },
@@ -68,6 +71,7 @@ const CONFIG_TABELAS = {
     },
     justificativas: {
         nome: 'Justificativas',
+        nomeSingular: 'Justificativa',
         icone: ClipboardList,
         campos: [
             { name: 'nome', label: 'Descricao', type: 'text', required: true },
@@ -328,7 +332,7 @@ export default function CadastroRapido() {
                         <div className="flex items-center gap-2 pb-2 border-b border-background-600">
                             <config.icone size={18} className="text-primary-400" />
                             <h2 className="font-display font-semibold text-white">
-                                Novo(a) {config.nome.slice(0, -1)}
+                                Cadastrar {config.nomeSingular}
                             </h2>
                         </div>
 
