@@ -35,6 +35,7 @@ export default function Login() {
                 <Input
                   key={senhaKey}
                   label="Senha"
+                  maxLength={20}
                   type={showSenha ? 'text' : 'password'}
                   placeholder="****"
                   value={form.senha}
