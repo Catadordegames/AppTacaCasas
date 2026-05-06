@@ -46,6 +46,7 @@ const AuthService = {
       usuario: {
         id: professor.id,
         nome: professor.nome,
+        cpf: professor.cpf || null,
         permissao: professor.permissao,
         casa_id: professor.casa_id,
         senha_alterada: professor.senha_alterada,

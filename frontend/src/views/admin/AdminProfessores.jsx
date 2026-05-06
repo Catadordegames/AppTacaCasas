@@ -6,6 +6,7 @@ import PasswordRequirements from '../../components/ui/PasswordRequirements'
 import useAdminProfessores from '../../hooks/useAdminProfessores'
 import { downloadBlobFromApi } from '../../utils/downloadHelper'
 import { useAuth } from '../../context/AuthContext'
+import { formatCPF, formatPhone } from '../../utils/formatters'
 
 export default function AdminProfessores() {
   const { usuario } = useAuth()
@@ -13,6 +14,7 @@ export default function AdminProfessores() {
 
   const columns = [
     { key: 'nome', label: 'Nome' },
+    { key: 'cpf', label: 'CPF', render: (v) => v ? formatCPF(v) : <span className="text-gray-500 italic">—</span> },
     { key: 'casa_nome', label: 'Casa', render: (v) => v || <span className="text-gray-500 italic">Sem Casa</span> },
     {
       key: 'permissao', label: 'Perfil', render: (v) => (
@@ -30,6 +32,9 @@ export default function AdminProfessores() {
     catch (e) { alert('Erro ao exportar professores.') }
     finally { setIsExporting(false) }
   }
+
+  // CPF editável somente se vazio (na edição)
+  const cpfReadOnly = editando && editando.cpf && editando.cpf.trim() !== ''
 
   return (
     <div className="space-y-5">
@@ -61,7 +66,29 @@ export default function AdminProfessores() {
             <div>
               <label className="label">Nome *</label>
               <input className="input" placeholder="Nome completo" value={form.nome}
-                onChange={(e) => setForm({ ...form, nome: e.target.value })} required />
+                onChange={(e) => setForm({ ...form, nome: e.target.value })}
+                readOnly={!!editando}
+                required />
+              {editando && <p className="text-xs text-gray-500 mt-1">Nome não pode ser alterado.</p>}
+            </div>
+            <div>
+              <label className="label">CPF {!editando && <span className="text-red-400 ml-1">*</span>}{cpfReadOnly && <span className="text-gray-500 font-normal ml-1">(já preenchido)</span>}</label>
+              <input className="input" placeholder="000.000.000-00" value={form.cpf}
+                onChange={(e) => setForm({ ...form, cpf: formatCPF(e.target.value) })}
+                readOnly={cpfReadOnly}
+                required={!editando}
+                maxLength={14} />
+            </div>
+            <div>
+              <label className="label">Email</label>
+              <input className="input" type="email" placeholder="email@exemplo.com" value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            </div>
+            <div>
+              <label className="label">Telefone</label>
+              <input className="input" type="tel" placeholder="(00) 00000-0000" value={form.telefone}
+                onChange={(e) => setForm({ ...form, telefone: formatPhone(e.target.value) })}
+                maxLength={15} />
             </div>
             <div>
               <label className="label">

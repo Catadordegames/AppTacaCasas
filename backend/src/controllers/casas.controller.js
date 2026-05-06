@@ -24,15 +24,6 @@ const CasasController = {
     } catch (err) { next(err); }
   },
 
-  async atualizar(req, res, next) {
-    try {
-      const { nome, brasao } = req.body;
-      const novoBrasao = req.file ? `/api/uploads/brasoes/${req.file.filename}` : brasao;
-      const atualizada = await CasasService.atualizar(req.params.id, nome, novoBrasao);
-      res.json(atualizada);
-    } catch (err) { next(err); }
-  },
-
   async deletar(req, res, next) {
     try {
       await CasasService.deletar(req.params.id);

@@ -7,10 +7,13 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Plus, Save, Pencil, Trash2, Users, School, BookOpen, ClipboardList, AlertCircle, AlertTriangle } from 'lucide-react'
+import { formatCPF } from '../../utils/formatters'
+import { isValidCPF } from '../../utils/validators'
 import toast from 'react-hot-toast'
 
 import api from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
+import { useNavigationGuard } from '../../context/NavigationGuardContext'
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Select, PasswordRequirements, LoadingSpinner } from '../../components/ui'
 import Modal from '../../components/ui/Modal'
 import { validarSenha } from '../../utils/password'
@@ -39,6 +42,7 @@ const CONFIG_TABELAS = {
         icone: School,
         campos: [
             { name: 'nome', label: 'Nome', type: 'text', required: true },
+            { name: 'cpf', label: 'CPF', type: 'text', required: true, props: { maxLength: 14, placeholder: '000.000.000-00' } },
             { name: 'senha', label: 'Senha Provisoria', type: 'password', required: true, props: { maxLength: 20, autoComplete: 'off', 'data-lpignore': 'true', preventSuggest: true } },
             {
                 name: 'permissao', label: 'Perfil', type: 'select', options: [
@@ -102,6 +106,20 @@ export default function CadastroRapido() {
 
     const config = tabelaAtiva ? CONFIG_TABELAS[tabelaAtiva] : null
 
+    // Registra guard de navegação quando há rascunho não salvo
+    useNavigationGuard(rascunho.length > 0, rascunho.length)
+
+    // Alerta nativo do browser ao fechar/recarregar a aba com rascunho não salvo
+    useEffect(() => {
+        if (rascunho.length === 0) return
+        const handler = (e) => {
+            e.preventDefault()
+            e.returnValue = ''
+        }
+        window.addEventListener('beforeunload', handler)
+        return () => window.removeEventListener('beforeunload', handler)
+    }, [rascunho.length])
+
     // Carrega dados das FKs quando a tabela muda
     useEffect(() => {
         if (!config) {
@@ -155,16 +173,49 @@ export default function CadastroRapido() {
             }
         }
         
-        if (tabelaAtiva === 'professores' && formData.senha) {
-            const erroSenha = validarSenha(formData.senha)
-            if (erroSenha) {
-                toast.error(erroSenha)
+        if (tabelaAtiva === 'professores') {
+            // Validar senha
+            if (formData.senha) {
+                const erroSenha = validarSenha(formData.senha)
+                if (erroSenha) {
+                    toast.error(erroSenha)
+                    return false
+                }
+            }
+
+            // Validar CPF obrigatório e formato
+            const cpfDigitos = formData.cpf ? formData.cpf.replace(/\D/g, '') : ''
+            if (!cpfDigitos) {
+                toast.error('CPF é obrigatório para criar um professor.')
+                return false
+            }
+            if (!isValidCPF(cpfDigitos)) {
+                toast.error('CPF inválido. Verifique os dígitos informados.')
+                return false
+            }
+
+            // Verificar duplicidade de CPF no rascunho local
+            const cpfDuplicado = rascunho.some(item => {
+                const itemCpf = item.cpf ? item.cpf.replace(/\D/g, '') : ''
+                return itemCpf === cpfDigitos
+            })
+            if (cpfDuplicado) {
+                toast.error('Já existe um professor com este CPF na lista de rascunho.')
+                return false
+            }
+
+            // Verificar duplicidade de nome no rascunho local
+            const nomeDuplicado = rascunho.some(item =>
+                item.nome?.trim().toLowerCase() === formData.nome?.trim().toLowerCase()
+            )
+            if (nomeDuplicado) {
+                toast.error('Já existe um professor com este nome na lista de rascunho.')
                 return false
             }
         }
 
         return true
-    }, [config, formData, tabelaAtiva])
+    }, [config, formData, tabelaAtiva, rascunho])
 
     const handleAdicionar = useCallback(() => {
         if (!validarForm()) return
@@ -291,7 +342,11 @@ export default function CadastroRapido() {
                     type={type}
                     required={required}
                     value={valor}
-                    onChange={(e) => handleChange(name, e.target.value)}
+                    onChange={(e) => {
+                        let val = e.target.value
+                        if (name === 'cpf') val = formatCPF(val)
+                        handleChange(name, val)
+                    }}
                     {...(campo.props || {})}
                 />
                 {name === 'senha' && <PasswordRequirements password={valor} />}

@@ -15,7 +15,7 @@ export default function useListagemLancamentos() {
     const [modalExclusao, setModalExclusao] = useState({ aberto: false, lancamento: null })
 
     const [filtros, setFiltros] = useState({
-        casa_id: '',
+        casa: '',
         professor_id: '',
         data_inicio: '',
         data_fim: '',
@@ -29,7 +29,7 @@ export default function useListagemLancamentos() {
 
     const buildParams = useCallback(() => {
         const params = new URLSearchParams()
-        if (filtros.casa_id) params.append('casa_id', filtros.casa_id)
+        if (filtros.casa) params.append('casa', filtros.casa)
         if (filtros.professor_id) params.append('professor_id', filtros.professor_id)
         if (filtros.data_inicio) params.append('data_inicio', filtros.data_inicio)
         if (filtros.data_fim) params.append('data_fim', filtros.data_fim)
@@ -69,9 +69,9 @@ export default function useListagemLancamentos() {
         [lancamentos]
     )
 
-    // Permissão: admin (permissao=1) ou autor do lançamento
+    // Permissão: admin (permissao=1) ou autor do lançamento (por nome)
     const podeDeletar = useCallback((lancamento) =>
-        usuario?.permissao === 1 || lancamento.professor_id === usuario?.id,
+        usuario?.permissao === 1 || lancamento.professor === usuario?.nome,
         [usuario]
     )
 

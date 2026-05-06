@@ -1,6 +1,6 @@
 // ============================================================
 // pages/admin/AdminCasas.jsx
-// CRUD completo de Casas (Equipes).
+// CRUD de Casas (Equipes). v3: Sem edição, somente criação e exclusão.
 // ============================================================
 
 import { Plus, Shield } from 'lucide-react'
@@ -9,7 +9,7 @@ import Modal from '../../components/ui/Modal'
 import useAdminCasas from '../../hooks/useAdminCasas'
 
 export default function AdminCasas() {
-  const { casas, loading, salvando, deletando, modalAberto, editando, form, setForm, abrirCriar, abrirEditar, fecharModal, handleSalvar, handleDeletar } = useAdminCasas()
+  const { casas, loading, salvando, deletando, modalAberto, form, setForm, abrirCriar, fecharModal, handleSalvar, handleDeletar } = useAdminCasas()
 
   const columns = [
     { 
@@ -52,7 +52,6 @@ export default function AdminCasas() {
           columns={columns}
           data={casas}
           loading={loading}
-          onEdit={abrirEditar}
           onDelete={handleDeletar}
           deletando={deletando}
           searchPlaceholder="Buscar casa..."
@@ -60,7 +59,7 @@ export default function AdminCasas() {
       </div>
 
       {modalAberto && (
-        <Modal title={editando ? 'Editar Casa' : 'Nova Casa'} onClose={fecharModal}>
+        <Modal title="Nova Casa" onClose={fecharModal}>
           <form onSubmit={handleSalvar} className="space-y-4">
             <div>
               <label className="label">Nome *</label>
@@ -77,25 +76,21 @@ export default function AdminCasas() {
               <input 
                 className="input" 
                 placeholder="Ex: 🦁" 
-                value={form.brasao?.startsWith('/api/') ? '' : form.brasao}
+                value={form.brasao}
                 onChange={(e) => setForm({ ...form, brasao: e.target.value })} 
               />
               
               {/* Preview Inteligente */}
               {form.brasao && !form.arquivoBrasao && (
                 <div className="flex justify-center mt-4 bg-background-700/50 p-4 rounded-xl border border-background-600">
-                  {form.brasao.startsWith('/api/') ? (
-                     <img src={form.brasao} alt="Preview do Brasão" className="w-16 h-16 object-contain drop-shadow-md" />
-                  ) : (
-                     <div className="text-center text-5xl drop-shadow-md">{form.brasao}</div>
-                  )}
+                  <div className="text-center text-5xl drop-shadow-md">{form.brasao}</div>
                 </div>
               )}
             </div>
             <div className="flex gap-2 pt-2">
               <button type="button" onClick={fecharModal} className="btn-secondary flex-1">Cancelar</button>
               <button type="submit" disabled={salvando} className="btn-primary flex-1">
-                {salvando ? 'Salvando...' : editando ? 'Salvar' : 'Criar'}
+                {salvando ? 'Salvando...' : 'Criar'}
               </button>
             </div>
           </form>

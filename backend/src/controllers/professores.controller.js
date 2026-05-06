@@ -1,3 +1,9 @@
+// ============================================================
+// controllers/professores.controller.js
+// Controlador HTTP para professores.
+// v3: cpf, email, telefone. Nome ineditável.
+// ============================================================
+
 const ProfessoresService = require('../services/professores.service');
 
 const ProfessoresController = {
@@ -18,15 +24,22 @@ const ProfessoresController = {
 
   async criar(req, res, next) {
     try {
-      const { nome, senha, permissao, casa_id } = req.body;
-      res.status(201).json(await ProfessoresService.criar(nome, senha, permissao, casa_id));
+      const { nome, senha, permissao, casa_id, cpf, email, telefone } = req.body;
+      res.status(201).json(await ProfessoresService.criar(nome, senha, permissao, casa_id, cpf, email, telefone));
     } catch (e) { next(e); }
   },
 
   async atualizar(req, res, next) {
     try {
-      const { nome, permissao, casa_id, senha } = req.body;
-      res.json(await ProfessoresService.atualizar(req.params.id, nome, permissao, casa_id, senha));
+      const { permissao, casa_id, senha, email, telefone, cpf } = req.body;
+      res.json(await ProfessoresService.atualizar(req.params.id, {
+        permissao,
+        casa_id,
+        email,
+        telefone,
+        cpf,
+        novaSenha: senha,
+      }));
     } catch (e) { next(e); }
   },
 

@@ -25,6 +25,7 @@ const INITIAL_FORM_STATE = {
   custom_justificativa: '',
   pontuacao: '',
   turno: '',
+  complemento: '',
 }
 
 export default function useLancarPontos() {
@@ -34,21 +35,23 @@ export default function useLancarPontos() {
 
   const [casas, setCasas] = useState([])
   const [turmas, setTurmas] = useState([])
-  const [alunos, setAlunos] = useState([])
+  const [allAlunos, setAllAlunos] = useState([])
   const [justificativas, setJustificativas] = useState([])
   const [loadingData, setLoadingData] = useState(true)
 
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        const [casasRes, turmasRes, justRes] = await Promise.all([
+        const [casasRes, turmasRes, justRes, alunosRes] = await Promise.all([
           api.get('/casas'),
           api.get('/turmas'),
           api.get('/justificativas'),
+          api.get('/alunos'),
         ])
         setCasas(casasRes.data)
         setTurmas(turmasRes.data)
         setJustificativas(justRes.data)
+        setAllAlunos(alunosRes.data)
       } catch (err) {
         toast.error('Erro ao carregar dados. Tente recarregar a página.')
       } finally {
@@ -59,35 +62,33 @@ export default function useLancarPontos() {
     loadInitialData()
   }, [])
 
-  useEffect(() => {
-    const loadAlunos = async () => {
-      if (!form.turma_id) {
-        setAlunos([])
-        setForm((f) => ({ ...f, aluno_id: '' }))
-        return
-      }
-
-      try {
-        const params = new URLSearchParams()
-        params.append('turma_id', form.turma_id)
-        if (form.casa_id) params.append('casa_id', form.casa_id)
-
-        const { data } = await api.get(`/alunos?${params}`)
-        setAlunos(data)
-      } catch (err) {
-        toast.error('Erro ao carregar alunos.')
-      }
-    }
-
-    loadAlunos()
-  }, [form.turma_id, form.casa_id])
-
   const updateField = useCallback((field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }))
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }))
     }
   }, [errors])
+
+  // Ao selecionar um aluno no modal, preenche casa e turma automaticamente
+  const handleAlunoSelect = useCallback((aluno) => {
+    setForm((prev) => ({
+      ...prev,
+      aluno_id: aluno ? String(aluno.id) : '',
+      casa_id: aluno?.casa_id ? String(aluno.casa_id) : prev.casa_id,
+      turma_id: aluno?.turma_id ? String(aluno.turma_id) : prev.turma_id,
+    }))
+    // Limpa erros relacionados
+    setErrors((prev) => ({
+      ...prev,
+      casa_id: undefined,
+      aluno_id: undefined,
+    }))
+  }, [])
+
+  // Limpa o aluno selecionado
+  const clearAluno = useCallback(() => {
+    setForm((prev) => ({ ...prev, aluno_id: '' }))
+  }, [])
 
   const handleJustificativaTypeChange = useCallback((type) => {
     setForm((prev) => ({
@@ -97,6 +98,20 @@ export default function useLancarPontos() {
       custom_justificativa: '',
       pontuacao: '',
     }))
+  }, [])
+
+  // Ao selecionar uma justificativa no modal
+  const handleJustificativaSelect = useCallback((justificativa) => {
+    setForm((prev) => ({
+      ...prev,
+      justificativa_id: String(justificativa.id),
+    }))
+    setErrors((prev) => ({ ...prev, justificativa_id: undefined }))
+  }, [])
+
+  // Limpa a justificativa selecionada
+  const clearJustificativa = useCallback(() => {
+    setForm((prev) => ({ ...prev, justificativa_id: '' }))
   }, [])
 
   const pontosPreview = useMemo(() => {
@@ -149,6 +164,7 @@ export default function useLancarPontos() {
         custom_justificativa: '',
         pontuacao: '',
         turno: '',
+        complemento: '',
       }))
     } catch (err) {
       toast.error(err.response?.data?.error || 'Erro ao lançar pontos.')
@@ -173,13 +189,11 @@ export default function useLancarPontos() {
     [turmas]
   )
 
-  const alunoOptions = useMemo(() =>
-    alunos.map((a) => ({
-      value: a.id,
-      label: a.nome,
-    })),
-    [alunos]
-  )
+  // Dados do aluno selecionado (para exibir no campo do formulário)
+  const selectedAluno = useMemo(() => {
+    if (!form.aluno_id) return null
+    return allAlunos.find((a) => a.id === Number(form.aluno_id)) || null
+  }, [form.aluno_id, allAlunos])
 
   const justificativaOptions = useMemo(() =>
     justificativas.map((j) => ({
@@ -189,6 +203,12 @@ export default function useLancarPontos() {
     [justificativas]
   )
 
+  // Dados da justificativa selecionada (para exibir no campo do formulário)
+  const selectedJustificativa = useMemo(() => {
+    if (!form.justificativa_id) return null
+    return justificativas.find((j) => j.id === Number(form.justificativa_id)) || null
+  }, [form.justificativa_id, justificativas])
+
   return {
     form,
     errors,
@@ -196,10 +216,17 @@ export default function useLancarPontos() {
     loadingData,
     casaOptions,
     turmaOptions,
-    alunoOptions,
+    allAlunos,
+    selectedAluno,
+    justificativas,
     justificativaOptions,
+    selectedJustificativa,
     updateField,
+    handleAlunoSelect,
+    clearAluno,
     handleJustificativaTypeChange,
+    handleJustificativaSelect,
+    clearJustificativa,
     pontosPreview,
     handleSubmit
   }
@@ -216,6 +243,7 @@ function buildPayload(form) {
     pontuacao: form.is_custom ? Number(form.pontuacao) : undefined,
     turno: form.turno || undefined,
     custom_justificativa: form.is_custom ? form.custom_justificativa : undefined,
+    complemento: form.complemento || undefined,
   }
 }
 

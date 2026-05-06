@@ -11,5 +11,7 @@ router.get('/', PerfilController.getMe);
 router.put('/', PerfilController.updateMe);
 // PUT /api/perfil/senha
 router.put('/senha', PerfilController.updateSenha);
+// PUT /api/perfil/cpf
+router.put('/cpf', PerfilController.updateCPF);
 
 module.exports = router;

@@ -8,9 +8,8 @@ const upload = require('../config/upload');
 router.get('/', CasasController.listar);
 router.get('/:id', CasasController.buscarPorId);
 
-// Apenas admin pode criar/editar/deletar
+// Apenas admin pode criar/deletar (casas não são editáveis)
 router.post('/', autenticar, apenasAdmin, upload.single('brasaoFile'), CasasController.criar);
-router.put('/:id', autenticar, apenasAdmin, upload.single('brasaoFile'), CasasController.atualizar);
 router.delete('/:id', autenticar, apenasAdmin, CasasController.deletar);
 
 module.exports = router;

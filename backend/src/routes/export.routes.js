@@ -3,6 +3,7 @@
 // Exportação CSV e Reset Anual.
 // Apenas admins têm acesso.
 // Atualizado para usar a Esteira Única de Exportação e Validação.
+// v3: novos campos de snapshot, sem FKs. Inclui cpf/email/telefone.
 // ============================================================
 
 const express = require('express');
@@ -31,8 +32,8 @@ const enviarCSV = (res, result, filename) => {
 };
 
 /**
- * Função utilitária para formatar os lançamentos antes de exportar
- * Remove IDs de FKs e renomeia colunas para ficarem amigáveis
+ * Função utilitária para formatar os lançamentos antes de exportar.
+ * v3: usa novos nomes de campos (casa, professor, aluno, turma, justificativa, complemento).
  */
 const formatarLancamentosParaCSV = (rows) => {
   return rows.map(row => {
@@ -45,13 +46,14 @@ const formatarLancamentosParaCSV = (rows) => {
     return {
       'ID': row.id,
       'Data': dataFormatada,
-      'Casa': row.casa_nome,
+      'Casa': row.casa,
       'Pontos': row.pontuacao,
-      'Professor': row.professor_nome,
-      'Aluno': row.aluno_nome || '-',
-      'Turma': row.turma_nome || '-',
+      'Professor': row.professor,
+      'Aluno': row.aluno || '-',
+      'Turma': row.turma || '-',
       'Turno': row.turno || '-',
-      'Justificativa': row.justificativa_snapshot,
+      'Justificativa': row.justificativa,
+      'Complemento': row.complemento || '-',
       'Tipo': row.is_custom ? 'Customizada' : 'Pré-definida',
     };
   });
@@ -60,16 +62,17 @@ const formatarLancamentosParaCSV = (rows) => {
 /**
  * GET /api/export/lancamentos
  * Exporta todos os lançamentos (ou filtrados) como CSV.
+ * v3: filtros por texto (casa, turma) em vez de IDs.
  */
 router.get('/lancamentos', autenticar, apenasAdmin, async (req, res, next) => {
   try {
-    const { casa_id, turma_id, data_inicio, data_fim } = req.query;
+    const { casa, turma, data_inicio, data_fim } = req.query;
 
     let query = 'SELECT * FROM lancamentos WHERE 1=1';
     const params = [];
 
-    if (casa_id) { query += ' AND casa_id = ?'; params.push(casa_id); }
-    if (turma_id) { query += ' AND turma_id = ?'; params.push(turma_id); }
+    if (casa) { query += ' AND casa = ?'; params.push(casa); }
+    if (turma) { query += ' AND turma = ?'; params.push(turma); }
     if (data_inicio) { query += ' AND data_lancamento >= ?'; params.push(data_inicio); }
     if (data_fim) { query += ' AND data_lancamento <= ?'; params.push(data_fim); }
 
@@ -96,6 +99,7 @@ router.get('/lancamentos', autenticar, apenasAdmin, async (req, res, next) => {
 /**
  * GET /api/export/ranking
  * Exporta o ranking atual como CSV.
+ * v3: JOIN por texto (l.casa = c.nome).
  */
 router.get('/ranking', autenticar, apenasAdmin, async (req, res, next) => {
   try {
@@ -105,7 +109,7 @@ router.get('/ranking', autenticar, apenasAdmin, async (req, res, next) => {
         COALESCE(SUM(l.pontuacao), 0) AS total_pontos,
         COUNT(l.id) AS total_lancamentos
       FROM casas c
-      LEFT JOIN lancamentos l ON c.id = l.casa_id
+      LEFT JOIN lancamentos l ON l.casa = c.nome
       GROUP BY c.id, c.nome
       ORDER BY total_pontos DESC
     `);
@@ -153,6 +157,7 @@ router.get('/alunos', autenticar, apenasAdmin, async (req, res, next) => {
 /**
  * GET /api/export/professores
  * Exporta todos os professores como CSV.
+ * v3: inclui cpf, email, telefone.
  */
 router.get('/professores', autenticar, apenasAdmin, async (req, res, next) => {
   try {
@@ -165,6 +170,9 @@ router.get('/professores', autenticar, apenasAdmin, async (req, res, next) => {
     const rowsFormatadas = rows.map(r => ({
       'ID': r.id,
       'Professor': r.nome,
+      'CPF': r.cpf || '-',
+      'Email': r.email || '-',
+      'Telefone': r.telefone || '-',
       'Permissão': r.permissao === 1 ? 'Administrador' : 'Professor',
       'Casa do Coração': r.casa_nome || '-'
     }));

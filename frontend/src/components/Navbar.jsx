@@ -10,6 +10,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Trophy, Menu, X, LogOut, Shield, User, AlertTriangle } from 'lucide-react'
 
 import { useAuth } from '../context/AuthContext'
+import { useGuardedNavigation } from '../context/NavigationGuardContext'
 import { Button, Input } from './ui'
 import Modal from './ui/Modal'
 import ThemeToggle from './ThemeToggle'
@@ -40,6 +41,7 @@ export default function Navbar() {
   const { usuario, logout, isAdmin } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
+  const { guardedNavigate } = useGuardedNavigation()
   const [menuAberto, setMenuAberto] = useState(false)
   const [resetModalAberto, setResetModalAberto] = useState(false)
 
@@ -71,6 +73,7 @@ export default function Navbar() {
             usuario={usuario}
             isAdmin={isAdmin}
             isActive={isActive}
+            guardedNavigate={guardedNavigate}
             onOpenReset={() => setResetModalAberto(true)}
           />
 
@@ -109,6 +112,7 @@ export default function Navbar() {
           usuario={usuario}
           isAdmin={isAdmin}
           isActive={isActive}
+          guardedNavigate={guardedNavigate}
           onLogout={handleLogout}
           onClose={closeMenu}
           onOpenReset={() => {
@@ -144,41 +148,42 @@ function Logo() {
   )
 }
 
-function DesktopNav({ usuario, isAdmin, isActive, onOpenReset }) {
+function DesktopNav({ usuario, isAdmin, isActive, guardedNavigate, onOpenReset }) {
   return (
     <div className="hidden md:flex items-center gap-6 text-sm font-semibold">
-      <NavLink to="/" isActive={isActive('/')}>Placar</NavLink>
+      <NavLink to="/" isActive={isActive('/')} guardedNavigate={guardedNavigate}>Placar</NavLink>
 
       {usuario && (
         <>
           {NAV_LINKS.professor.map((link) => (
-            <NavLink key={link.to} to={link.to} isActive={isActive(link.to)}>
+            <NavLink key={link.to} to={link.to} isActive={isActive(link.to)} guardedNavigate={guardedNavigate}>
               {link.label}
             </NavLink>
           ))}
         </>
       )}
 
-      {isAdmin && <AdminDropdown onOpenReset={onOpenReset} />}
+      {isAdmin && <AdminDropdown guardedNavigate={guardedNavigate} onOpenReset={onOpenReset} />}
     </div>
   )
 }
 
-function NavLink({ to, children, isActive }) {
+function NavLink({ to, children, isActive, guardedNavigate }) {
   return (
-    <Link
-      to={to}
-      className={`pb-0.5 transition-colors ${isActive
+    <a
+      href={to}
+      onClick={(e) => { e.preventDefault(); guardedNavigate(to) }}
+      className={`pb-0.5 transition-colors cursor-pointer ${isActive
         ? 'text-primary-400 border-b-2 border-primary-400'
         : 'text-gray-400 hover:text-white'
         }`}
     >
       {children}
-    </Link>
+    </a>
   )
 }
 
-function AdminDropdown({ onOpenReset }) {
+function AdminDropdown({ guardedNavigate, onOpenReset }) {
   return (
     <div className="relative group">
       <button className="flex items-center gap-1 text-purple-400 hover:text-purple-300 pb-0.5">
@@ -190,13 +195,14 @@ function AdminDropdown({ onOpenReset }) {
                    opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden"
       >
         {ADMIN_LINKS.map((item) => (
-          <Link
+          <a
             key={item.to}
-            to={item.to}
-            className="block px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-background-600 transition-colors"
+            href={item.to}
+            onClick={(e) => { e.preventDefault(); guardedNavigate(item.to) }}
+            className="block px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-background-600 transition-colors cursor-pointer"
           >
             {item.label}
-          </Link>
+          </a>
         ))}
         <div className="border-t border-background-600 mt-1">
           <button 
@@ -212,16 +218,18 @@ function AdminDropdown({ onOpenReset }) {
 }
 
 function DesktopUserActions({ usuario, isAdmin, onLogout }) {
+  const { guardedNavigate } = useGuardedNavigation()
   return (
     <div className="hidden md:flex items-center gap-3">
       <UserBadge usuario={usuario} isAdmin={isAdmin} />
-      <Link
-        to="/perfil"
-        className="text-gray-500 hover:text-primary-400 transition-colors"
+      <a
+        href="/perfil"
+        onClick={(e) => { e.preventDefault(); guardedNavigate('/perfil') }}
+        className="text-gray-500 hover:text-primary-400 transition-colors cursor-pointer"
         title="Meu Perfil"
       >
         <User size={18} />
-      </Link>
+      </a>
       <button
         onClick={onLogout}
         className="text-gray-500 hover:text-red-400 transition-colors"
@@ -261,15 +269,15 @@ function MobileMenuButton({ isOpen, onClick }) {
   )
 }
 
-function MobileNav({ usuario, isAdmin, isActive, onLogout, onClose, onOpenReset }) {
+function MobileNav({ usuario, isAdmin, isActive, guardedNavigate, onLogout, onClose, onOpenReset }) {
   return (
     <div className="md:hidden bg-background-800 border-t border-background-600 px-4 pb-4 space-y-1">
-      <MobileLink to="/" label="🏆 Placar" onClick={onClose} />
+      <MobileLink to="/" label="🏆 Placar" guardedNavigate={guardedNavigate} onClick={onClose} />
 
       {usuario && (
         <>
-          <MobileLink to="/lancar" label="➕ Lançar Pontos" onClick={onClose} />
-          <MobileLink to="/lancamentos" label="📋 Lançamentos" onClick={onClose} />
+          <MobileLink to="/lancar" label="➕ Lançar Pontos" guardedNavigate={guardedNavigate} onClick={onClose} />
+          <MobileLink to="/lancamentos" label="📋 Lançamentos" guardedNavigate={guardedNavigate} onClick={onClose} />
         </>
       )}
 
@@ -283,6 +291,7 @@ function MobileNav({ usuario, isAdmin, isActive, onLogout, onClose, onOpenReset 
               key={link.to}
               to={link.to}
               label={link.label}
+              guardedNavigate={guardedNavigate}
               onClick={onClose}
             />
           ))}
@@ -298,7 +307,7 @@ function MobileNav({ usuario, isAdmin, isActive, onLogout, onClose, onOpenReset 
 
       {usuario ? (
         <>
-          <MobileLink to="/perfil" label="👤 Meu Perfil" onClick={onClose} />
+          <MobileLink to="/perfil" label="👤 Meu Perfil" guardedNavigate={guardedNavigate} onClick={onClose} />
           <button
             onClick={onLogout}
             className="w-full text-left px-3 py-2 text-red-400 hover:bg-background-700 rounded-lg 
@@ -308,22 +317,22 @@ function MobileNav({ usuario, isAdmin, isActive, onLogout, onClose, onOpenReset 
           </button>
         </>
       ) : (
-        <MobileLink to="/login" label="🔐 Entrar" onClick={onClose} />
+        <MobileLink to="/login" label="🔐 Entrar" guardedNavigate={guardedNavigate} onClick={onClose} />
       )}
     </div>
   )
 }
 
-function MobileLink({ to, label, onClick }) {
+function MobileLink({ to, label, guardedNavigate, onClick }) {
   return (
-    <Link
-      to={to}
-      onClick={onClick}
+    <a
+      href={to}
+      onClick={(e) => { e.preventDefault(); guardedNavigate(to); onClick() }}
       className="block px-3 py-2 text-gray-300 hover:text-white hover:bg-background-700 
-                 rounded-lg transition-colors text-sm font-semibold"
+                 rounded-lg transition-colors text-sm font-semibold cursor-pointer"
     >
       {label}
-    </Link>
+    </a>
   )
 }
 

@@ -1,15 +1,28 @@
+// ============================================================
+// controllers/lancamentos.controller.js
+// Controlador HTTP para lançamentos.
+// Estrutura v3: filtros por texto (casa, turma, professor).
+// ============================================================
+
 const LancamentosService = require('../services/lancamentos.service');
+const ProfessoresRepository = require('../repositories/professores.repository');
 
 const LancamentosController = {
   async listar(req, res, next) {
     try {
       const filtros = {
-        casa_id: req.query.casa_id,
-        turma_id: req.query.turma_id,
+        casa: req.query.casa,
+        turma: req.query.turma,
         data_inicio: req.query.data_inicio,
         data_fim: req.query.data_fim,
-        professor_id: req.query.professor_id,
       };
+
+      // Suporte a filtro por professor_id: busca o nome para filtrar por texto
+      if (req.query.professor_id) {
+        const prof = await ProfessoresRepository.buscarPorId(req.query.professor_id);
+        if (prof) filtros.professor = prof.nome;
+      }
+
       // Filtro de justificativa customizada: aceita "true", "false" ou omitido
       const isCustom = req.query.is_custom;
       if (isCustom === 'true') filtros.is_custom = true;

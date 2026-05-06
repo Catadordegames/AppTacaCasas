@@ -5,7 +5,7 @@
 // para qualquer componente da árvore via useAuth().
 // ============================================================
 
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import api from '../services/api'
 
 const AuthContext = createContext(null)
@@ -42,12 +42,24 @@ export function AuthProvider({ children }) {
     setUsuario(null)
   }
 
+  /**
+   * Atualiza os dados do usuário no contexto e localStorage.
+   * Usado para refletir mudanças (ex: CPF cadastrado) sem re-login.
+   */
+  const refreshUsuario = useCallback((updates) => {
+    setUsuario((prev) => {
+      const updated = { ...prev, ...updates }
+      localStorage.setItem('usuario', JSON.stringify(updated))
+      return updated
+    })
+  }, [])
+
   const permissao = Number(usuario?.permissao)
   const isAdmin = permissao === 1
   const isProfessor = permissao === 2 || isAdmin
 
   return (
-    <AuthContext.Provider value={{ usuario, login, logout, isAdmin, isProfessor, loading }}>
+    <AuthContext.Provider value={{ usuario, login, logout, refreshUsuario, isAdmin, isProfessor, loading }}>
       {children}
     </AuthContext.Provider>
   )

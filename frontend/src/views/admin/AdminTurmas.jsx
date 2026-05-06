@@ -54,7 +54,10 @@ export default function AdminTurmas() {
             <div>
               <label className="label">Nome *</label>
               <input className="input" placeholder="Ex: 7º A" value={form.nome}
-                onChange={(e) => setForm({ ...form, nome: e.target.value })} required />
+                onChange={(e) => setForm({ ...form, nome: e.target.value })}
+                readOnly={!!editando}
+                required />
+              {editando && <p className="text-xs text-gray-500 mt-1">Nome não pode ser alterado.</p>}
             </div>
             <div>
               <label className="label">Turno *</label>

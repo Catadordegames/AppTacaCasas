@@ -1,3 +1,8 @@
+// ============================================================
+// services/casas.service.js
+// v3: Sem atualizar(). Casas só podem ser criadas ou deletadas.
+// ============================================================
+
 const CasasRepository = require('../repositories/casas.repository');
 
 const CasasService = {
@@ -22,17 +27,6 @@ const CasasService = {
       throw err;
     }
     return CasasRepository.criar(nome, brasao);
-  },
-
-  async atualizar(id, nome, brasao) {
-    await this.buscarPorId(id);
-    if (!nome || !brasao) {
-      const err = new Error('Nome e brasão são obrigatórios.');
-      err.status = 400;
-      throw err;
-    }
-    await CasasRepository.atualizar(id, nome, brasao);
-    return CasasRepository.buscarPorId(id);
   },
 
   async deletar(id) {

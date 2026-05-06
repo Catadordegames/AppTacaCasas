@@ -4,6 +4,7 @@
 // Essa tabela guarda um SNAPSHOT histórico completo:
 // mesmo que alunos/professores/casas sejam alterados depois,
 // o lançamento mantém os dados do momento em que foi feito.
+// Estrutura v3: sem FKs, somente campos de texto (snapshot puro).
 // ============================================================
 
 const db = require('../config/database');
@@ -11,7 +12,7 @@ const db = require('../config/database');
 const LancamentosRepository = {
   /**
    * Lista lançamentos com filtros opcionais.
-   * Professores verão apenas seus lançamentos no service.
+   * Filtros são por texto (casa, turma, professor) e não por ID.
    */
   async listar(filtros = {}) {
     let query = `
@@ -21,17 +22,17 @@ const LancamentosRepository = {
     `;
     const params = [];
 
-    if (filtros.professor_id) {
-      query += ' AND l.professor_id = ?';
-      params.push(filtros.professor_id);
+    if (filtros.professor) {
+      query += ' AND l.professor = ?';
+      params.push(filtros.professor);
     }
-    if (filtros.casa_id) {
-      query += ' AND l.casa_id = ?';
-      params.push(filtros.casa_id);
+    if (filtros.casa) {
+      query += ' AND l.casa = ?';
+      params.push(filtros.casa);
     }
-    if (filtros.turma_id) {
-      query += ' AND l.turma_id = ?';
-      params.push(filtros.turma_id);
+    if (filtros.turma) {
+      query += ' AND l.turma = ?';
+      params.push(filtros.turma);
     }
     if (filtros.data_inicio) {
       query += ' AND l.data_lancamento >= ?';
@@ -58,40 +59,35 @@ const LancamentosRepository = {
 
   async criar(dados) {
     const {
-      professor_id, professor_nome,
-      casa_id, casa_nome,
-      aluno_id, aluno_nome,
-      turma_id, turma_nome,
-      justificativa_id, custom_justificativa,
-      justificativa_snapshot, is_custom,
-      turno, pontuacao, data_lancamento,
+      professor, casa,
+      aluno, turma,
+      justificativa, complemento,
+      is_custom, turno,
+      pontuacao, data_lancamento,
     } = dados;
 
     const [result] = await db.query(
       `INSERT INTO lancamentos
-        (professor_id, professor_nome, casa_id, casa_nome,
-         aluno_id, aluno_nome, turma_id, turma_nome,
-         justificativa_id, custom_justificativa, justificativa_snapshot,
+        (professor, casa, aluno, turma,
+         justificativa, complemento,
          is_custom, turno, pontuacao, data_lancamento)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        professor_id, professor_nome,
-        casa_id, casa_nome,
-        aluno_id || null, aluno_nome || null,
-        turma_id || null, turma_nome || null,
-        justificativa_id || null, custom_justificativa || null,
-        justificativa_snapshot, is_custom,
-        turno || null, pontuacao, data_lancamento,
+        professor, casa,
+        aluno || null, turma || null,
+        justificativa, complemento || null,
+        is_custom, turno || null,
+        pontuacao, data_lancamento,
       ]
     );
     return result.insertId;
   },
 
   async atualizar(id, dados) {
-    const { pontuacao, justificativa_snapshot } = dados;
+    const { pontuacao, justificativa } = dados;
     const [result] = await db.query(
-      'UPDATE lancamentos SET pontuacao = ?, justificativa_snapshot = ? WHERE id = ?',
-      [pontuacao, justificativa_snapshot, id]
+      'UPDATE lancamentos SET pontuacao = ?, justificativa = ? WHERE id = ?',
+      [pontuacao, justificativa, id]
     );
     return result.affectedRows > 0;
   },
