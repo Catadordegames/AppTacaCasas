@@ -95,3 +95,20 @@ export function formatPhone(value) {
     if (numbers.length <= 10) return `(${numbers.substring(0, 2)}) ${numbers.substring(2, 6)}-${numbers.substring(6)}`;
     return `(${numbers.substring(0, 2)}) ${numbers.substring(2, 7)}-${numbers.substring(7, 11)}`;
 }
+
+/**
+ * Formata um CPF visualmente: XXX.XXX.XXX-XX.
+ * Limita a 11 dígitos numéricos no total (14 caracteres formatados).
+ * @param {string} value - O valor atual do input
+ * @returns {string} - O valor formatado
+ */
+export function formatCPF(value) {
+    if (!value) return '';
+    let numbers = value.replace(/\D/g, '');
+    numbers = numbers.substring(0, 11);
+    if (numbers.length === 0) return '';
+    if (numbers.length <= 3) return numbers;
+    if (numbers.length <= 6) return `${numbers.substring(0, 3)}.${numbers.substring(3)}`;
+    if (numbers.length <= 9) return `${numbers.substring(0, 3)}.${numbers.substring(3, 6)}.${numbers.substring(6)}`;
+    return `${numbers.substring(0, 3)}.${numbers.substring(3, 6)}.${numbers.substring(6, 9)}-${numbers.substring(9, 11)}`;
+}

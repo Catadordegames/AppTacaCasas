@@ -10,7 +10,7 @@ const PerfilController = {
   async getMe(req, res, next) {
     try {
       const id = req.usuario.id;
-      const [rows] = await pool.query('SELECT id, nome, permissao, casa_id, email, telefone, senha_alterada FROM professores WHERE id = ?', [id]);
+      const [rows] = await pool.query('SELECT id, nome, cpf, permissao, casa_id, email, telefone, senha_alterada FROM professores WHERE id = ?', [id]);
       if (rows.length === 0) return res.status(404).json({ error: 'Usuário não encontrado' });
       res.json(rows[0]);
     } catch (error) {
@@ -22,7 +22,9 @@ const PerfilController = {
     try {
       const id = req.usuario.id;
       const { email, telefone } = req.body;
-      await pool.query('UPDATE professores SET email = ?, telefone = ? WHERE id = ?', [email || null, telefone || null, id]);
+      // Limpar dígitos do telefone antes de salvar
+      const telLimpo = telefone ? telefone.replace(/\D/g, '') : null;
+      await pool.query('UPDATE professores SET email = ?, telefone = ? WHERE id = ?', [email || null, telLimpo, id]);
       res.json({ message: 'Perfil atualizado com sucesso!' });
     } catch (error) {
       next(error);
@@ -61,6 +63,68 @@ const PerfilController = {
       await pool.query('UPDATE professores SET senha = ?, senha_alterada = TRUE WHERE id = ?', [novaSenhaHash, id]);
 
       res.json({ message: 'Senha atualizada com sucesso!' });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Cadastra o CPF do professor logado.
+   * Só permite se o CPF atual for NULL (primeiro cadastro).
+   */
+  async updateCPF(req, res, next) {
+    try {
+      const id = req.usuario.id;
+      const { cpf } = req.body;
+
+      if (!cpf) {
+        return res.status(400).json({ error: 'CPF é obrigatório.' });
+      }
+
+      // Limpar dígitos
+      const cpfLimpo = cpf.replace(/\D/g, '');
+
+      if (cpfLimpo.length !== 11) {
+        return res.status(400).json({ error: 'CPF deve conter 11 dígitos.' });
+      }
+
+      // Validar dígitos verificadores (módulo 11)
+      if (/^(\d)\1{10}$/.test(cpfLimpo)) {
+        return res.status(400).json({ error: 'CPF inválido.' });
+      }
+
+      let soma = 0;
+      for (let i = 0; i < 9; i++) soma += Number(cpfLimpo[i]) * (10 - i);
+      let resto = soma % 11;
+      const d1 = resto < 2 ? 0 : 11 - resto;
+      if (Number(cpfLimpo[9]) !== d1) {
+        return res.status(400).json({ error: 'CPF inválido.' });
+      }
+
+      soma = 0;
+      for (let i = 0; i < 10; i++) soma += Number(cpfLimpo[i]) * (11 - i);
+      resto = soma % 11;
+      const d2 = resto < 2 ? 0 : 11 - resto;
+      if (Number(cpfLimpo[10]) !== d2) {
+        return res.status(400).json({ error: 'CPF inválido.' });
+      }
+
+      // Verificar se o professor atual já tem CPF cadastrado
+      const [atual] = await pool.query('SELECT cpf FROM professores WHERE id = ?', [id]);
+      if (atual.length === 0) return res.status(404).json({ error: 'Usuário não encontrado.' });
+      if (atual[0].cpf) {
+        return res.status(400).json({ error: 'CPF já cadastrado. Não é possível alterar.' });
+      }
+
+      // Verificar unicidade do CPF
+      const [existente] = await pool.query('SELECT id FROM professores WHERE cpf = ? AND id != ?', [cpfLimpo, id]);
+      if (existente.length > 0) {
+        return res.status(409).json({ error: 'Este CPF já está vinculado a outro professor.' });
+      }
+
+      await pool.query('UPDATE professores SET cpf = ? WHERE id = ?', [cpfLimpo, id]);
+
+      res.json({ message: 'CPF cadastrado com sucesso!', cpf: cpfLimpo });
     } catch (error) {
       next(error);
     }

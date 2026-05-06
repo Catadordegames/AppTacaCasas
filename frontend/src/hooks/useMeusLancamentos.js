@@ -12,7 +12,7 @@ export default function useMeusLancamentos() {
   const carregar = useCallback(async () => {
     try {
       setLoading(true)
-      const params = filtroCasa ? `?casa_id=${filtroCasa}` : ''
+      const params = filtroCasa ? `?casa=${filtroCasa}` : ''
       const [l, c] = await Promise.all([
         api.get(`/lancamentos${params}`),
         api.get('/casas'),

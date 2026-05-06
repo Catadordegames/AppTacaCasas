@@ -53,6 +53,7 @@ frontend/.vite/
 
 # Uploads and media files
 uploads/
+backend/storage/
 
 # IDE and OS files
 .DS_Store

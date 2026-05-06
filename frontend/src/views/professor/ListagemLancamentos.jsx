@@ -2,6 +2,7 @@
 // views/professor/ListagemLancamentos.jsx
 // View de listagem de lancamentos com filtros avancados
 // e exclusao com controle de permissao.
+// v3: campos de snapshot (casa, turma, professor, justificativa, complemento).
 // ============================================================
 
 import {
@@ -66,9 +67,8 @@ export default function ListagemLancamentos() {
 
     const filtrosAtivos = useMemo(() => {
         const lista = []
-        if (filtros.casa_id) {
-            const c = casas.find((x) => String(x.id) === filtros.casa_id)
-            lista.push(`Casa: ${c ? c.nome : filtros.casa_id}`)
+        if (filtros.casa) {
+            lista.push(`Casa: ${filtros.casa}`)
         }
         if (filtros.professor_id) {
             const p = professores.find((x) => String(x.id) === filtros.professor_id)
@@ -82,7 +82,7 @@ export default function ListagemLancamentos() {
     }, [filtros, casas, professores, isCustomChecked, isPredefinidaChecked])
 
     const limparFiltros = () => {
-        setFiltro('casa_id', '')
+        setFiltro('casa', '')
         setFiltro('professor_id', '')
         setFiltro('data_inicio', '')
         setFiltro('data_fim', '')
@@ -95,7 +95,7 @@ export default function ListagemLancamentos() {
         setIsExporting(true)
         try {
             const params = new URLSearchParams()
-            if (filtros.casa_id) params.append('casa_id', filtros.casa_id)
+            if (filtros.casa) params.append('casa', filtros.casa)
             if (filtros.professor_id) params.append('professor_id', filtros.professor_id)
             if (filtros.data_inicio) params.append('data_inicio', filtros.data_inicio)
             if (filtros.data_fim) params.append('data_fim', filtros.data_fim)
@@ -146,12 +146,12 @@ export default function ListagemLancamentos() {
                             </label>
                             <select
                                 className="input text-sm py-1.5 w-full"
-                                value={filtros.casa_id}
-                                onChange={(e) => setFiltro('casa_id', e.target.value)}
+                                value={filtros.casa}
+                                onChange={(e) => setFiltro('casa', e.target.value)}
                             >
                                 <option value="">Todas</option>
                                 {casas.map((c) => (
-                                    <option key={c.id} value={c.id}>{c.nome}</option>
+                                    <option key={c.id} value={c.nome}>{c.nome}</option>
                                 ))}
                             </select>
                         </div>
@@ -295,13 +295,18 @@ export default function ListagemLancamentos() {
                                 {/* Conteúdo */}
                                 <div className="flex-1 min-w-0">
                                     <p className="font-semibold text-white text-sm truncate">
-                                        {l.justificativa_snapshot}
+                                        {l.justificativa}
                                     </p>
+                                    {l.complemento && (
+                                        <p className="text-xs text-gray-400 mt-0.5 truncate italic">
+                                            {l.complemento}
+                                        </p>
+                                    )}
                                     <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-xs text-gray-500">
-                                        <span>{l.casa_nome}</span>
-                                        {l.turma_nome && <span>{l.turma_nome}</span>}
-                                        {l.aluno_nome && <span>{l.aluno_nome}</span>}
-                                        <span className="text-gray-600">por {l.professor_nome}</span>
+                                        <span>{l.casa}</span>
+                                        {l.turma && <span>{l.turma}</span>}
+                                        {l.aluno && <span>{l.aluno}</span>}
+                                        <span className="text-gray-600">por {l.professor}</span>
                                         <span>{formatDate(l.data_lancamento)}</span>
                                     </div>
                                     {l.is_custom && (
@@ -337,10 +342,10 @@ export default function ListagemLancamentos() {
                         <div>
                             <p className="text-gray-300">
                                 Tem certeza que deseja excluir o lançamento{' '}
-                                <strong>"{modalExclusao.lancamento.justificativa_snapshot}"</strong>?
+                                <strong>"{modalExclusao.lancamento.justificativa}"</strong>?
                             </p>
                             <p className="text-sm text-gray-500 mt-1">
-                                por {modalExclusao.lancamento.professor_nome} — Essa ação não poderá ser desfeita.
+                                por {modalExclusao.lancamento.professor} — Essa ação não poderá ser desfeita.
                             </p>
                         </div>
                     </div>

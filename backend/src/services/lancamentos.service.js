@@ -2,8 +2,9 @@
 // services/lancamentos.service.js
 // Regras de negócio mais complexas do sistema:
 // - Monta o snapshot histórico completo no momento do lançamento
-// - Professor só pode deletar seus próprios lançamentos
+// - Professor só pode deletar seus próprios lançamentos (por nome)
 // - Admin pode deletar qualquer lançamento
+// Estrutura v3: sem FKs, somente snapshots de texto.
 // ============================================================
 
 const LancamentosRepository = require('../repositories/lancamentos.repository');
@@ -39,7 +40,7 @@ const LancamentosService = {
     const {
       casa_id, aluno_id, turma_id,
       justificativa_id, custom_justificativa,
-      is_custom, turno,
+      is_custom, turno, complemento,
     } = body;
 
     // ── Validações básicas ──────────────────────────────────
@@ -61,7 +62,7 @@ const LancamentosService = {
     }
 
     let pontuacao;
-    let justificativa_snapshot;
+    let justificativa;
 
     if (is_custom) {
       // Justificativa personalizada: pontuação vem no body
@@ -70,47 +71,42 @@ const LancamentosService = {
         e.status = 400; throw e;
       }
       pontuacao = Number(body.pontuacao);
-      justificativa_snapshot = custom_justificativa;
+      justificativa = custom_justificativa;
     } else {
       // Justificativa padrão: busca pontos da tabela
-      const justificativa = await JustificativasRepository.buscarPorId(justificativa_id);
-      if (!justificativa) {
+      const just = await JustificativasRepository.buscarPorId(justificativa_id);
+      if (!just) {
         const e = new Error('Justificativa não encontrada.'); e.status = 404; throw e;
       }
-      pontuacao = justificativa.pontos;
-      justificativa_snapshot = justificativa.nome; // SNAPSHOT do nome atual
+      pontuacao = just.pontos;
+      justificativa = just.nome; // SNAPSHOT do nome atual
     }
 
     // Snapshot do aluno (opcional)
-    let aluno_nome = null;
+    let aluno = null;
     let turma_id_final = turma_id || null;
-    let turma_nome = null;
+    let turma = null;
 
     if (aluno_id) {
-      const aluno = await AlunosRepository.buscarPorId(aluno_id);
-      if (aluno) {
-        aluno_nome = aluno.nome;
-        if (!turma_id_final) turma_id_final = aluno.turma_id;
+      const alunoObj = await AlunosRepository.buscarPorId(aluno_id);
+      if (alunoObj) {
+        aluno = alunoObj.nome;
+        if (!turma_id_final) turma_id_final = alunoObj.turma_id;
       }
     }
 
     if (turma_id_final) {
-      const turma = await TurmasRepository.buscarPorId(turma_id_final);
-      if (turma) turma_nome = turma.nome;
+      const turmaObj = await TurmasRepository.buscarPorId(turma_id_final);
+      if (turmaObj) turma = turmaObj.nome;
     }
 
     const dados = {
-      professor_id: usuario.id,
-      professor_nome: usuario.nome,
-      casa_id,
-      casa_nome: casa.nome,
-      aluno_id: aluno_id || null,
-      aluno_nome,
-      turma_id: turma_id_final,
-      turma_nome,
-      justificativa_id: is_custom ? null : justificativa_id,
-      custom_justificativa: is_custom ? custom_justificativa : null,
-      justificativa_snapshot,
+      professor: usuario.nome,
+      casa: casa.nome,
+      aluno,
+      turma,
+      justificativa,
+      complemento: complemento || null,
       is_custom: Boolean(is_custom),
       turno: turno || null,
       pontuacao,
@@ -123,37 +119,37 @@ const LancamentosService = {
 
   /**
    * Atualiza um lançamento (pontuação e justificativa).
-   * Regra: professor só pode editar os seus. Admin pode tudo.
+   * Regra: professor só pode editar os seus (por nome). Admin pode tudo.
    */
   async atualizar(id, usuario, body) {
     const lancamento = await this.buscarPorId(id);
 
-    if (usuario.permissao !== 1 && lancamento.professor_id !== usuario.id) {
+    if (usuario.permissao !== 1 && lancamento.professor !== usuario.nome) {
       const e = new Error('Você não tem permissão para editar este lançamento.');
       e.status = 403; throw e;
     }
 
-    const { pontuacao, justificativa_snapshot } = body;
-    if (pontuacao === undefined && !justificativa_snapshot) {
+    const { pontuacao, justificativa } = body;
+    if (pontuacao === undefined && !justificativa) {
       const e = new Error('Informe ao menos pontuação ou justificativa para atualizar.');
       e.status = 400; throw e;
     }
 
     await LancamentosRepository.atualizar(id, {
       pontuacao: pontuacao !== undefined ? Number(pontuacao) : lancamento.pontuacao,
-      justificativa_snapshot: justificativa_snapshot || lancamento.justificativa_snapshot,
+      justificativa: justificativa || lancamento.justificativa,
     });
     return LancamentosRepository.buscarPorId(id);
   },
 
   /**
    * Deleta um lançamento.
-   * Regra: professor só pode deletar os seus. Admin pode tudo.
+   * Regra: professor só pode deletar os seus (por nome). Admin pode tudo.
    */
   async deletar(id, usuario) {
     const lancamento = await this.buscarPorId(id);
 
-    if (usuario.permissao !== 1 && lancamento.professor_id !== usuario.id) {
+    if (usuario.permissao !== 1 && lancamento.professor !== usuario.nome) {
       const e = new Error('Você não tem permissão para remover este lançamento.');
       e.status = 403; throw e;
     }

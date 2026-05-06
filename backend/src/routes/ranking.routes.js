@@ -2,6 +2,7 @@
 // routes/ranking.routes.js
 // Endpoint público: qualquer pessoa (alunos, pais, etc.)
 // pode ver o placar sem precisar de login.
+// v3: JOIN por texto (l.casa = c.nome) em vez de FK.
 // ============================================================
 
 const express = require('express');
@@ -23,7 +24,7 @@ router.get('/', async (req, res, next) => {
         COALESCE(SUM(l.pontuacao), 0) AS total_pontos,
         COUNT(l.id) AS total_lancamentos
       FROM casas c
-      LEFT JOIN lancamentos l ON c.id = l.casa_id
+      LEFT JOIN lancamentos l ON l.casa = c.nome
       GROUP BY c.id, c.nome, c.brasao
       ORDER BY total_pontos DESC
     `);

@@ -18,7 +18,11 @@ export default function useAdminTurmas() {
 
   const handleSalvar = async (e) => {
     e.preventDefault()
-    try { await save(form, editando?.id); fecharModal() } catch {}
+    try {
+      // Na edição, envia o nome atual (ineditável) + turno
+      await save(form, editando?.id)
+      fecharModal()
+    } catch {}
   }
 
   const handleDeletar = async (t) => {

@@ -5,11 +5,12 @@ import { Card, Input, Button, PasswordRequirements } from '../components/ui';
 import { Save, Lock, User, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { validarSenha } from '../utils/password';
-import { formatPhone } from '../utils/formatters';
+import { formatPhone, formatCPF } from '../utils/formatters';
 
 export default function Perfil() {
-    const { user, login } = useAuth();
+    const { usuario, login } = useAuth();
     const [perfilForm, setPerfilForm] = useState({ email: '', telefone: '' });
+    const [perfilData, setPerfilData] = useState({ nome: '', cpf: '' });
     const [senhaForm, setSenhaForm] = useState({ senhaAtual: '', novaSenha: '', confirmaSenha: '' });
     const [salvandoPerfil, setSalvandoPerfil] = useState(false);
     const [salvandoSenha, setSalvandoSenha] = useState(false);
@@ -19,9 +20,13 @@ export default function Perfil() {
         const carregarPerfil = async () => {
             try {
                 const res = await api.get('/perfil');
+                setPerfilData({
+                    nome: res.data.nome || '',
+                    cpf: res.data.cpf || '',
+                });
                 setPerfilForm({
                     email: res.data.email || '',
-                    telefone: res.data.telefone || ''
+                    telefone: res.data.telefone ? formatPhone(res.data.telefone) : '',
                 });
             } catch (err) {
                 toast.error('Erro ao carregar dados do perfil.');
@@ -62,7 +67,12 @@ export default function Perfil() {
         e.preventDefault();
         setSalvandoPerfil(true);
         try {
-            await api.put('/perfil', perfilForm);
+            // Enviar telefone cru (somente dígitos)
+            const payload = {
+                email: perfilForm.email,
+                telefone: perfilForm.telefone,
+            };
+            await api.put('/perfil', payload);
             toast.success('Perfil atualizado com sucesso!');
         } catch (err) {
             toast.error(err.response?.data?.error || 'Erro ao atualizar perfil.');
@@ -94,11 +104,10 @@ export default function Perfil() {
             setSenhaForm({ senhaAtual: '', novaSenha: '', confirmaSenha: '' });
             
             // Se o usuário tinha a flag de senha não alterada, atualiza o token
-            if (!user.senha_alterada) {
-                const res = await api.get('/perfil');
-                const updateToken = await api.post('/auth/login', { nome: user.nome, senha: senhaForm.novaSenha });
+            if (!usuario.senha_alterada) {
+                const updateToken = await api.post('/auth/login', { identificador: usuario.nome, senha: senhaForm.novaSenha });
                 if (updateToken.data.token) {
-                    login(updateToken.data.token, updateToken.data.usuario);
+                    login(usuario.nome, senhaForm.novaSenha);
                 }
             }
         } catch (err) {
@@ -115,7 +124,7 @@ export default function Perfil() {
                 Meu Perfil
             </h1>
 
-            {!user?.senha_alterada && (
+            {!usuario?.senha_alterada && (
                 <div className="bg-yellow-600 border border-yellow-500 p-4 rounded-xl flex gap-3 text-white shadow-lg">
                     <AlertCircle className="shrink-0" />
                     <div>
@@ -125,10 +134,30 @@ export default function Perfil() {
                 </div>
             )}
 
+            {/* Informações de identificação (somente leitura) */}
+            <Card>
+                <div className="flex items-center gap-4 p-1">
+                    <div className="shrink-0 w-14 h-14 rounded-full bg-primary-500/20 flex items-center justify-center">
+                        <User size={28} className="text-primary-400" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                        <h2 className="text-lg font-semibold text-white truncate">
+                            {perfilData.nome || usuario?.nome || '—'}
+                        </h2>
+                        <p className="text-sm text-gray-400 mt-0.5">
+                            {perfilData.cpf
+                                ? `CPF: ${formatCPF(perfilData.cpf)}`
+                                : 'CPF: Não informado'}
+                        </p>
+                    </div>
+                </div>
+            </Card>
+
+            {/* Dados editáveis de contato */}
             <Card>
                 <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
                     <User size={20} className="text-gray-400" />
-                    Informações de Contato (Opcional)
+                    Dados de Contato
                 </h2>
                 <form onSubmit={handleSalvarPerfil} className="space-y-4">
                     <Input

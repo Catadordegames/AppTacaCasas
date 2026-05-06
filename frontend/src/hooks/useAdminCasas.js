@@ -8,14 +8,12 @@ export default function useAdminCasas() {
   const { data: casas, loading, loadingSave: salvando, loadingDelete: deletando, load, save, remove } = useCrud('/casas', 'Casa')
 
   const [modalAberto, setModalAberto] = useState(false)
-  const [editando, setEditando] = useState(null)
   const [form, setForm] = useState(FORM_VAZIO)
 
   useEffect(() => { load() }, [load])
 
-  const abrirCriar = () => { setEditando(null); setForm(FORM_VAZIO); setModalAberto(true) }
-  const abrirEditar = (casa) => { setEditando(casa); setForm({ nome: casa.nome, brasao: casa.brasao, arquivoBrasao: null }); setModalAberto(true) }
-  const fecharModal = () => { setModalAberto(false); setEditando(null); setForm(FORM_VAZIO) }
+  const abrirCriar = () => { setForm(FORM_VAZIO); setModalAberto(true) }
+  const fecharModal = () => { setModalAberto(false); setForm(FORM_VAZIO) }
 
   const handleSalvar = async (e) => {
     e.preventDefault()
@@ -30,7 +28,7 @@ export default function useAdminCasas() {
         formData.append('brasao', form.brasao)
       }
 
-      await save(formData, editando?.id)
+      await save(formData)
       fecharModal()
     } catch {}
   }
@@ -39,5 +37,5 @@ export default function useAdminCasas() {
     await remove(casa.id)
   }
 
-  return { casas, loading, salvando, deletando, modalAberto, editando, form, setForm, abrirCriar, abrirEditar, fecharModal, handleSalvar, handleDeletar }
+  return { casas, loading, salvando, deletando, modalAberto, form, setForm, abrirCriar, fecharModal, handleSalvar, handleDeletar }
 }

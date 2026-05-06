@@ -14,8 +14,8 @@ const SCHEMAS = {
         opcionais: ['casa_id'],
     },
     professores: {
-        obrigatorios: ['nome', 'senha', 'permissao', 'casa_id'],
-        opcionais: [],
+        obrigatorios: ['nome', 'senha', 'permissao', 'cpf'],
+        opcionais: ['casa_id'],
     },
     turmas: {
         obrigatorios: ['nome', 'turno'],
@@ -75,10 +75,12 @@ const BulkInsertService = {
             return itemFiltrado;
         });
 
-        // 4. Hash de senha para professores
+        // 4. Hash de senha e limpeza de CPF para professores
         if (tabela === 'professores') {
             for (const item of dadosProcessados) {
                 item.senha = bcryptjs.hashSync(item.senha, 10);
+                // Enviar somente os 11 dígitos ao banco (remove máscara)
+                if (item.cpf) item.cpf = item.cpf.replace(/\D/g, '');
             }
         }
 

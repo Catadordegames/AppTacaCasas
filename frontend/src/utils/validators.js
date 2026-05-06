@@ -80,3 +80,47 @@ export function validateForm(form, rules) {
 
     return { isValid, errors }
 }
+
+/**
+ * Valida um CPF brasileiro usando o algoritmo de dígitos verificadores.
+ * 1. Remove caracteres não-numéricos.
+ * 2. Verifica se tem exatamente 11 dígitos.
+ * 3. Rejeita CPFs com todos os dígitos iguais.
+ * 4. Calcula 1º dígito verificador (multiplicadores 10→2).
+ * 5. Calcula 2º dígito verificador (multiplicadores 11→2).
+ * 6. Compara dígitos calculados com os informados.
+ * @param {string} cpf - CPF com ou sem formatação
+ * @returns {boolean} - true se válido
+ */
+export function isValidCPF(cpf) {
+    if (!cpf) return false
+    const digits = cpf.replace(/\D/g, '')
+
+    // Deve ter exatamente 11 dígitos
+    if (digits.length !== 11) return false
+
+    // Rejeitar CPFs com todos os dígitos iguais
+    if (/^(\d)\1{10}$/.test(digits)) return false
+
+    // Cálculo do 1º dígito verificador
+    let soma = 0
+    for (let i = 0; i < 9; i++) {
+        soma += Number(digits[i]) * (10 - i)
+    }
+    let resto = soma % 11
+    const digito1 = resto < 2 ? 0 : 11 - resto
+
+    if (Number(digits[9]) !== digito1) return false
+
+    // Cálculo do 2º dígito verificador
+    soma = 0
+    for (let i = 0; i < 10; i++) {
+        soma += Number(digits[i]) * (11 - i)
+    }
+    resto = soma % 11
+    const digito2 = resto < 2 ? 0 : 11 - resto
+
+    if (Number(digits[10]) !== digito2) return false
+
+    return true
+}
