@@ -16,7 +16,7 @@ export default function useListagemLancamentos() {
 
     const [filtros, setFiltros] = useState({
         casa: '',
-        professor_id: '',
+        professor: '',
         data_inicio: '',
         data_fim: '',
         is_custom: true,
@@ -30,7 +30,7 @@ export default function useListagemLancamentos() {
     const buildParams = useCallback(() => {
         const params = new URLSearchParams()
         if (filtros.casa) params.append('casa', filtros.casa)
-        if (filtros.professor_id) params.append('professor_id', filtros.professor_id)
+        if (filtros.professor) params.append('professor', filtros.professor)
         if (filtros.data_inicio) params.append('data_inicio', filtros.data_inicio)
         if (filtros.data_fim) params.append('data_fim', filtros.data_fim)
         if (filtros.is_custom && !filtros.is_predefinida) {

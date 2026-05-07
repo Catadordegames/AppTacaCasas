@@ -54,6 +54,7 @@ frontend/.vite/
 # Uploads and media files
 uploads/
 backend/storage/
+docs/beckup
 
 # IDE and OS files
 .DS_Store

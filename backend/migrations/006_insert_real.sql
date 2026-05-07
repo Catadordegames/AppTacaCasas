@@ -1,0 +1,3 @@
+-- ============================================================
+-- esta migration ja foi executada em server, contudo seus dados são privados, e não estão presentes neste repositorio
+-- ============================================================

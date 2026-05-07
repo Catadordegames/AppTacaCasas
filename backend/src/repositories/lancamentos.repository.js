@@ -23,8 +23,8 @@ const LancamentosRepository = {
     const params = [];
 
     if (filtros.professor) {
-      query += ' AND l.professor = ?';
-      params.push(filtros.professor);
+      query += ' AND l.professor LIKE ?';
+      params.push(`%${filtros.professor}%`);
     }
     if (filtros.casa) {
       query += ' AND l.casa = ?';

@@ -2,26 +2,12 @@
 -- 005_fix_remodel.sql
 -- Correção da migration 005 que falhou parcialmente no servidor.
 -- Idempotente: pode ser executada múltiplas vezes com segurança.
+-- Compatível com driver Node.js (sem DELIMITER/PROCEDURE).
 -- ============================================================
 
--- ── 1. Coluna CPF (pode já existir da execução parcial) ─────
--- MariaDB não tem ADD COLUMN IF NOT EXISTS nativo, usamos procedure
-DELIMITER //
-CREATE PROCEDURE _fix_005()
-BEGIN
-    -- Adicionar coluna cpf se não existir
-    IF NOT EXISTS (
-        SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS 
-        WHERE TABLE_SCHEMA = DATABASE() 
-          AND TABLE_NAME = 'professores' 
-          AND COLUMN_NAME = 'cpf'
-    ) THEN
-        ALTER TABLE professores ADD COLUMN cpf VARCHAR(11) NULL;
-    END IF;
-END //
-DELIMITER ;
-CALL _fix_005();
-DROP PROCEDURE IF EXISTS _fix_005;
+-- ── 1. Coluna CPF (ignora erro se já existir) ───────────────
+-- MariaDB 10.5+ suporta IF NOT EXISTS em ALTER TABLE ADD COLUMN
+ALTER TABLE professores ADD COLUMN IF NOT EXISTS cpf VARCHAR(11) NULL;
 
 -- ── 2. Limpar telefones duplicados antes do UNIQUE ──────────
 -- Mantém o telefone no registro com menor ID, nullifica os demais
@@ -47,7 +33,6 @@ JOIN (
 SET p.email = NULL;
 
 -- ── 4. Indexes UNIQUE (ignora se já existem) ────────────────
--- Usa CREATE INDEX IF NOT EXISTS (suportado no MariaDB 10.5+)
 CREATE UNIQUE INDEX IF NOT EXISTS uq_professores_cpf ON professores (cpf);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_professores_nome ON professores (nome);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_professores_telefone ON professores (telefone);

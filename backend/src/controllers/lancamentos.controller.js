@@ -17,8 +17,11 @@ const LancamentosController = {
         data_fim: req.query.data_fim,
       };
 
-      // Suporte a filtro por professor_id: busca o nome para filtrar por texto
-      if (req.query.professor_id) {
+      // Filtro por nome do professor (texto direto no snapshot)
+      if (req.query.professor) {
+        filtros.professor = req.query.professor;
+      } else if (req.query.professor_id) {
+        // Retrocompatibilidade: busca nome pelo ID
         const prof = await ProfessoresRepository.buscarPorId(req.query.professor_id);
         if (prof) filtros.professor = prof.nome;
       }

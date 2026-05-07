@@ -70,9 +70,8 @@ export default function ListagemLancamentos() {
         if (filtros.casa) {
             lista.push(`Casa: ${filtros.casa}`)
         }
-        if (filtros.professor_id) {
-            const p = professores.find((x) => String(x.id) === filtros.professor_id)
-            lista.push(`Professor: ${p ? p.nome : filtros.professor_id}`)
+        if (filtros.professor) {
+            lista.push(`Professor: ${filtros.professor}`)
         }
         if (filtros.data_inicio) lista.push(`De: ${filtros.data_inicio}`)
         if (filtros.data_fim) lista.push(`Ate: ${filtros.data_fim}`)
@@ -83,7 +82,7 @@ export default function ListagemLancamentos() {
 
     const limparFiltros = () => {
         setFiltro('casa', '')
-        setFiltro('professor_id', '')
+        setFiltro('professor', '')
         setFiltro('data_inicio', '')
         setFiltro('data_fim', '')
         setFiltro('is_custom', true)
@@ -96,7 +95,7 @@ export default function ListagemLancamentos() {
         try {
             const params = new URLSearchParams()
             if (filtros.casa) params.append('casa', filtros.casa)
-            if (filtros.professor_id) params.append('professor_id', filtros.professor_id)
+            if (filtros.professor) params.append('professor', filtros.professor)
             if (filtros.data_inicio) params.append('data_inicio', filtros.data_inicio)
             if (filtros.data_fim) params.append('data_fim', filtros.data_fim)
             await downloadBlobFromApi(`/export/lancamentos?${params.toString()}`, 'lancamentos.csv')
@@ -160,16 +159,13 @@ export default function ListagemLancamentos() {
                             <label className="label text-xs flex items-center gap-1">
                                 <User size={12} /> Professor
                             </label>
-                            <select
+                            <input
+                                type="text"
+                                placeholder="Buscar por nome..."
                                 className="input text-sm py-1.5 w-full"
-                                value={filtros.professor_id}
-                                onChange={(e) => setFiltro('professor_id', e.target.value)}
-                            >
-                                <option value="">Todos</option>
-                                {professores.map((p) => (
-                                    <option key={p.id} value={p.id}>{p.nome}</option>
-                                ))}
-                            </select>
+                                value={filtros.professor}
+                                onChange={(e) => setFiltro('professor', e.target.value)}
+                            />
                         </div>
 
                         <div>
