@@ -62,6 +62,15 @@ export default function LancarPontos() {
               onClear={clearAluno}
             />
 
+            {/* Turma (opcional) — preenchida automaticamente ao selecionar aluno */}
+            <Select
+              label="Turma"
+              value={form.turma_id}
+              onChange={(e) => updateField('turma_id', e.target.value)}
+              options={turmaOptions}
+              placeholder="Nenhuma turma específica"
+            />
+
             {/* Casa — preenchida automaticamente ao selecionar aluno */}
             <Select
               label="Casa / Equipe"
@@ -73,15 +82,6 @@ export default function LancarPontos() {
               required
             />
 
-            {/* Turma (opcional) — preenchida automaticamente ao selecionar aluno */}
-            <Select
-              label="Turma"
-              value={form.turma_id}
-              onChange={(e) => updateField('turma_id', e.target.value)}
-              options={turmaOptions}
-              placeholder="Nenhuma turma específica"
-            />
-
             {/* Turno (opcional) */}
             <Select
               label="Turno"
@@ -90,17 +90,6 @@ export default function LancarPontos() {
               options={TURNOS}
             />
 
-            {/* Complemento (opcional) */}
-            <div>
-              <label className="label">Complemento</label>
-              <textarea
-                className="input min-h-[60px] resize-y"
-                placeholder="Observações adicionais (opcional)"
-                value={form.complemento}
-                onChange={(e) => updateField('complemento', e.target.value)}
-                maxLength={500}
-              />
-            </div>
 
             {/* Toggle: justificativa padrão vs custom */}
             <div>
@@ -145,6 +134,18 @@ export default function LancarPontos() {
                 />
               </>
             )}
+
+            {/* Complemento (opcional) */}
+            <div>
+              <label className="label">Complemento</label>
+              <textarea
+                className="input min-h-[60px] resize-y"
+                placeholder="Observações adicionais (opcional)"
+                value={form.complemento}
+                onChange={(e) => updateField('complemento', e.target.value)}
+                maxLength={500}
+              />
+            </div>
 
             {/* Preview da pontuação */}
             <PontosPreview pontos={pontosPreview} />
@@ -256,11 +257,10 @@ function JustificativaField({ selectedJustificativa, onOpenModal, onClear, error
         /* Justificativa selecionada — exibe chip com info */
         <div className="input flex items-center gap-3 cursor-default">
           <span
-            className={`shrink-0 min-w-[40px] h-8 rounded-lg flex items-center justify-center text-sm font-bold ${
-              selectedJustificativa.pontos >= 0
-                ? 'bg-emerald-500/15 text-emerald-400'
-                : 'bg-red-500/15 text-red-400'
-            }`}
+            className={`shrink-0 min-w-[40px] h-8 rounded-lg flex items-center justify-center text-sm font-bold ${selectedJustificativa.pontos >= 0
+              ? 'bg-emerald-500/15 text-emerald-400'
+              : 'bg-red-500/15 text-red-400'
+              }`}
           >
             {formatPontos(selectedJustificativa.pontos)}
           </span>
@@ -284,9 +284,8 @@ function JustificativaField({ selectedJustificativa, onOpenModal, onClear, error
         <button
           type="button"
           onClick={onOpenModal}
-          className={`input w-full text-left flex items-center gap-3 hover:border-primary-500/50 transition-colors cursor-pointer ${
-            error ? 'border-red-500' : ''
-          }`}
+          className={`input w-full text-left flex items-center gap-3 hover:border-primary-500/50 transition-colors cursor-pointer ${error ? 'border-red-500' : ''
+            }`}
         >
           <ClipboardList size={16} className="text-gray-500 shrink-0" />
           <span className="text-gray-500 text-sm">Toque para selecionar justificativa...</span>
