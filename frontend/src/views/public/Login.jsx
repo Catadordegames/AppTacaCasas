@@ -22,10 +22,10 @@ export default function Login() {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <Input
-                  label="Usuario ou E-mail"
-                  placeholder="Seu nome ou e-mail"
+                  label="Usuário, E-mail ou CPF"
+                  placeholder="Seu nome, e-mail ou CPF"
                   value={form.identificador}
-                  maxLength={30}
+                  maxLength={90}
                   onChange={(e) => handleChange('identificador', e.target.value)}
                   leftIcon={<User size={16} />}
                   error={errors.identificador}

@@ -13,7 +13,7 @@ const AuthService = {
    * Lança erros com status HTTP para o controller tratar.
    */
   async login(identificador, senha) {
-    const professor = await AuthRepository.buscarPorNomeOuEmail(identificador);
+    const professor = await AuthRepository.buscarPorIdentificador(identificador);
 
     if (!professor) {
       const err = new Error('Credenciais inválidas.');

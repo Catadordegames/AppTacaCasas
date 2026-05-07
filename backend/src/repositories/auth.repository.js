@@ -17,14 +17,17 @@ const AuthRepository = {
   },
 
   /**
-   * Busca um professor/admin pelo nome ou email para realizar o login
+   * Busca um professor/admin pelo nome, email ou CPF para realizar o login
    * @param {string} identificador
    * @returns {Promise<Object|null>}
    */
-  async buscarPorNomeOuEmail(identificador) {
+  async buscarPorIdentificador(identificador) {
+    // Normaliza CPF removendo pontos e traço (ex: 123.456.789-00 -> 12345678900)
+    const cpfNormalizado = identificador.replace(/[\.\-]/g, '');
+
     const [rows] = await pool.query(
-      'SELECT * FROM professores WHERE nome = ? OR email = ? LIMIT 1',
-      [identificador, identificador]
+      'SELECT * FROM professores WHERE nome = ? OR email = ? OR cpf = ? LIMIT 1',
+      [identificador, identificador, cpfNormalizado]
     );
     return rows.length > 0 ? rows[0] : null;
   },
